@@ -9,7 +9,7 @@ import {
  } from '@nestjs/common';
 import { UsersService } from './users.service';
 import { CreateUserDto } from 'src/dto/create-user.dto';
-import { Usuario } from 'src/entities/usuario.entity';
+import { User } from 'src/entities/user.entity';
 
 
 @Controller('users')
@@ -19,22 +19,22 @@ export class UsersController {
     ) {}
 
     @Post()
-    create(@Body() createUserDto: CreateUserDto): Promise<Usuario> {
+    create(@Body() createUserDto: CreateUserDto): Promise<User> {
         return this.usersService.createUser(createUserDto);
     }
 
     @Get()
-    getAll(): Promise<Usuario[]> {
+    getAll(): Promise<User[]> {
         return this.usersService.findAllUsers();
     }
 
     @Get(':id')
-    getById(@Param('id', ParseIntPipe) id: number): Promise<Usuario | null> {
+    getById(@Param('id', ParseIntPipe) id: number): Promise<User | null> {
         return this.usersService.findUserById(id);
     }
 
     @Get('rut/:rut')
-    getByRut(@Param('rut') rut: string): Promise<Usuario | null> {
+    getByRut(@Param('rut') rut: string): Promise<User | null> {
         return this.usersService.findUserByRut(rut);
     }
 

@@ -1,24 +1,24 @@
 import { Entity, Column, PrimaryGeneratedColumn, OneToMany } from 'typeorm';
 
-@Entity('usuarios')
-export class Usuario {
+@Entity('users')
+export class User {
     @PrimaryGeneratedColumn()
     id: number;
     
     @Column({ type: 'varchar', length: 255 })
-    nombre: string;
+    name: string;
     
     @Column({ type: 'varchar', length: 255 })
-    apellido_paterno: string;
+    paternal_surname: string;
 
     @Column({ type: 'varchar', length: 255, nullable: true })
-    apellido_materno: string;
+    maternal_surname: string;
     
     @Column({ type: 'varchar', length: 255 })
-    correo: string;
+    email: string;
     
     @Column({ type: 'int', nullable: true })
-    telefono: number;
+    phone_number: number;
 
     @Column({ type: 'varchar', length: 15, unique: true })
     rut: string;

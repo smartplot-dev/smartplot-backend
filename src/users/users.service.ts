@@ -1,5 +1,5 @@
 import { Injectable } from '@nestjs/common';
-import { Usuario } from 'src/entities/usuario.entity';
+import { User } from 'src/entities/user.entity';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { CreateUserDto } from 'src/dto/create-user.dto';
@@ -8,8 +8,8 @@ import * as bcrypt from 'bcrypt';
 @Injectable()
 export class UsersService {
     constructor(
-        @InjectRepository(Usuario)
-        private readonly userRepository: Repository<Usuario>,
+        @InjectRepository(User)
+        private readonly userRepository: Repository<User>,
     ) {}
 
     private async hashPassword(password: string): Promise<string> {
@@ -17,16 +17,16 @@ export class UsersService {
         return await bcrypt.hash(password, saltRounds);
     }
 
-    async createUser(createUserDto: CreateUserDto): Promise<Usuario> {
-        const user = new Usuario();
-        user.nombre = createUserDto.nombre;
-        user.apellido_paterno = createUserDto.apellido_paterno;
-        if(createUserDto.apellido_materno) {
-            user.apellido_materno = createUserDto.apellido_materno;
+    async createUser(createUserDto: CreateUserDto): Promise<User> {
+        const user = new User();
+        user.name = createUserDto.name;
+        user.paternal_surname = createUserDto.paternal_surname;
+        if(createUserDto.maternal_surname) {
+            user.maternal_surname = createUserDto.maternal_surname;
         }
-        user.correo = createUserDto.correo;
-        if(createUserDto.telefono) {
-            user.telefono = createUserDto.telefono;
+        user.email = createUserDto.email;
+        if(createUserDto.phone_number) {
+            user.phone_number = createUserDto.phone_number;
         }
         // TODO: ensure RUT is unique and properly formatted (ex: 12345678-9)
         user.rut = createUserDto.rut;
@@ -36,32 +36,32 @@ export class UsersService {
         return await this.userRepository.save(user);
     }
 
-    async findAllUsers(): Promise<Usuario[]> {
+    async findAllUsers(): Promise<User[]> {
         return await this.userRepository.find();
     }
 
-    findUserById(id: number): Promise<Usuario | null> {
+    findUserById(id: number): Promise<User | null> {
         return this.userRepository.findOneBy( { id } );
     }
 
-    findUserByRut(rut: string): Promise<Usuario | null> {
+    findUserByRut(rut: string): Promise<User | null> {
         return this.userRepository.findOneBy({ rut });
     }
 
-    async updateUser(id: number, updateUserDto: CreateUserDto): Promise<Usuario | null> {
+    async updateUser(id: number, updateUserDto: CreateUserDto): Promise<User | null> {
         const user = await this.userRepository.findOneBy({ id });
         if (!user) {
             return null; // User not found
         }
 
-        user.nombre = updateUserDto.nombre;
-        user.apellido_paterno = updateUserDto.apellido_paterno;
-        if (updateUserDto.apellido_materno) {
-            user.apellido_materno = updateUserDto.apellido_materno;
+        user.name = updateUserDto.name;
+        user.paternal_surname = updateUserDto.paternal_surname;
+        if (updateUserDto.maternal_surname) {
+            user.maternal_surname = updateUserDto.maternal_surname;
         }
-        user.correo = updateUserDto.correo;
-        if (updateUserDto.telefono) {
-            user.telefono = updateUserDto.telefono;
+        user.email = updateUserDto.email;
+        if (updateUserDto.phone_number) {
+            user.phone_number = updateUserDto.phone_number;
         }
         user.rut = updateUserDto.rut;
         user.password = await this.hashPassword(updateUserDto.password);
