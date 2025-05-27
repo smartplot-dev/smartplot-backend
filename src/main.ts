@@ -6,8 +6,8 @@ async function bootstrap() {
   const app = await NestFactory.create(AppModule);
 
   const config = new DocumentBuilder()
-    .setTitle('API Documentation')
-    .setDescription('API description')
+    .setTitle('SmartPlot API')
+    .setDescription('Documentación de la API de SmartPlot')
     .setVersion(process.env.APPVERSION ?? '0.1.0')
     .addTag('api')
     .build();
