@@ -1,4 +1,5 @@
-import { Entity, Column, PrimaryGeneratedColumn, OneToMany } from 'typeorm';
+import { Entity, Column, PrimaryGeneratedColumn, OneToMany, JoinColumn } from 'typeorm';
+import { Notice } from './notice.entity';
 
 @Entity('users')
 export class User {
@@ -28,4 +29,14 @@ export class User {
 
     @Column({ type: 'boolean', default: true })
     is_active: boolean;
+
+    @Column({ type: 'timestamp', default: () => 'CURRENT_TIMESTAMP' })
+    created_at: Date;
+
+    @Column({ type: 'timestamp', nullable: true })
+    updated_at: Date;
+
+    @OneToMany(() => Notice, notice => notice.uploadedBy, { eager: true })
+    @JoinColumn({ name: 'uploaded_by' })
+    notices: Notice[];
 }
