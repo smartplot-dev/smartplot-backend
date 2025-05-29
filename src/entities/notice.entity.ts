@@ -1,7 +1,5 @@
 import { Entity, Column, PrimaryGeneratedColumn, ManyToOne, JoinColumn } from 'typeorm';
 import { User } from './user.entity';
-import { Voting } from './voting.entity';
-import { VoteOption } from './vote_option.entity';
 
 @Entity('notices')
 export class Notice {
