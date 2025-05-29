@@ -8,7 +8,6 @@ import {Body,
 import { ParcelService } from './parcel.service';
 import { CreateParcelDto } from 'src/dto/create-parcela.dto';
 import { Parcel } from 'src/entities/parcel.entity';
-import { Public } from 'src/decorators/public.decorator';
 
 @Controller('parcel')
 export class ParcelController {constructor(

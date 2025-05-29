@@ -11,7 +11,6 @@ export class ParcelService {
             private readonly parcelRepository: Repository<Parcel>,
         ) {}
     
-
         async createParcel(createParcelDto: CreateParcelDto): Promise<Parcel> {
             const parcel = new Parcel();
             parcel.numero_parcela = createParcelDto.numero_parcela

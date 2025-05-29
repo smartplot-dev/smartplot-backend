@@ -2,7 +2,7 @@ import { Module } from '@nestjs/common';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { UsersModule } from './users/users.module';
-import { ParcelModule } from './parcel/parcel/parcel.module';
+import { ParcelModule } from './parcel/parcel.module';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { ConfigModule } from '@nestjs/config';
 import { AuthModule } from './auth/auth.module';
@@ -10,6 +10,7 @@ import { JwtStrategy } from './auth/jwt.strategy';
 import { APP_GUARD } from '@nestjs/core';
 import { JwtGuard } from './guards/jwt.guard';
 import { NoticesModule } from './notices/notices.module';
+import { InvoiceModule } from './invoice/invoice.module';
 
 @Module({
   imports: [
@@ -32,6 +33,7 @@ import { NoticesModule } from './notices/notices.module';
     ParcelModule,
     AuthModule,
     NoticesModule,
+    InvoiceModule,
   ],
   controllers: [AppController],
   providers: [
