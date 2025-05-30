@@ -5,6 +5,7 @@ import { Body,
     Param,
     Post,
     ParseIntPipe,
+    Put,
  } from '@nestjs/common';
 import { InvoiceService } from './invoice.service';
 import { CreateInvoiceDto } from 'src/dto/create-invoice.dto';
@@ -42,5 +43,13 @@ export class InvoiceController {
     @Delete(':id')
     delete(@Param('id', ParseIntPipe) id: number): Promise<void> {
         return this.invoiceService.deleteInvoice(id);
+    }
+
+    @Put(':id')
+    update(
+        @Param('id', ParseIntPipe) id: number,
+        @Body() updateData: Partial<CreateInvoiceDto>
+    ): Promise<Invoice> {
+        return this.invoiceService.updateInvoice(id, updateData);
     }
 }

@@ -56,4 +56,13 @@ export class InvoiceService {
         }
         await this.invoiceRepository.remove(invoice);
     }
+
+    async updateInvoice(id: number, updateData: Partial<CreateInvoiceDto>): Promise<Invoice> {
+        const invoice = await this.invoiceRepository.findOneBy({ id });
+        if (!invoice) {
+            throw new BadRequestException('Invoice not found');
+        }
+        Object.assign(invoice, updateData);
+        return await this.invoiceRepository.save(invoice);
+    }
 }

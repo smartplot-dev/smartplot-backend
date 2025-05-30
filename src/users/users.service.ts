@@ -16,7 +16,6 @@ export class UsersService {
         private readonly userRepository: Repository<User>,
         @InjectRepository(Parcel)
         private readonly parcelRepository: Repository<Parcel>,
-         // Assuming you have a ParcelService to handle parcels
     ) {}
 
     private async hashPassword(password: string): Promise<string> {

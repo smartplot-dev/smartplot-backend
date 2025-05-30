@@ -14,5 +14,5 @@ export class Parcel {
     invoices: Invoice[];
 
     @ManyToMany(() => User, user => user.parcels)   
-    users: User[]; // Many-to-many relationship with User entity
+    users: User[];
 }

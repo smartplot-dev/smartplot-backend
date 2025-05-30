@@ -45,11 +45,11 @@ export class User {
     @JoinTable({name: 'user_parcel',
         joinColumn: { name: 'user_id',
              referencedColumnName: 'id',
-            foreignKeyConstraintName:'user_parcel_user_id' }, // Name of the join column in the user_parcel table
+            foreignKeyConstraintName:'user_parcel_user_id' },
         inverseJoinColumn: { name: 'parcel_id',
              referencedColumnName: 'id_parcel',
-            foreignKeyConstraintName:'user_parcel_parcel_id' } // Name of the join column in the user_parcel table
-    }) // Name of the join table)
-    parcels: Parcel[]; // Many-to-many relationship with Parcel entity
+            foreignKeyConstraintName:'user_parcel_parcel_id' }
+    })
+    parcels: Parcel[];
     
 }

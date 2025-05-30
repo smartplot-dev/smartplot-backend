@@ -11,6 +11,7 @@ import { APP_GUARD } from '@nestjs/core';
 import { JwtGuard } from './guards/jwt.guard';
 import { NoticesModule } from './notices/notices.module';
 import { InvoiceModule } from './invoice/invoice.module';
+import { PaymentsModule } from './payments/payments.module';
 
 @Module({
   imports: [
@@ -34,6 +35,7 @@ import { InvoiceModule } from './invoice/invoice.module';
     AuthModule,
     NoticesModule,
     InvoiceModule,
+    PaymentsModule,
   ],
   controllers: [AppController],
   providers: [
