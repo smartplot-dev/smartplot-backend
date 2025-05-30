@@ -8,7 +8,6 @@ import { InvoiceService } from 'src/invoice/invoice.service';
 import { Invoice } from 'src/entities/invoice.entity';
 import { WebpayPlus } from 'transbank-sdk';
 import { Options, IntegrationApiKeys, Environment, IntegrationCommerceCodes } from 'transbank-sdk';
-import { v4 as uuidv4 } from 'uuid';
 
 @Injectable()
 export class PaymentsService {
@@ -18,6 +17,16 @@ export class PaymentsService {
         private readonly invoiceService: InvoiceService,
     ) {}
 
+    // callback URL for commiting webpay transactions
+    // use a real URL in production, ngrok or similar for testing
+    callbackUrl = 'https://yourdomain.com/payments/webpay/commit';
+    
+    /**
+     * Inicia una transacción con Webpay
+     * @param createPaymentDto - DTO que contiene detalles del pago.
+     * @returns DTO que contiene el token y la URL para completar el pago.
+     * @throws BadRequestException si hay un error al crear la transacción o si las notas de cobro no son válidas.
+     */
     async startWebpayPayment(
         createPaymentDto: CreatePaymentDto
     ): Promise<StartTrxResponseDto> {
@@ -57,7 +66,7 @@ export class PaymentsService {
             savedPayment.internal_reference_number,
             savedPayment.internal_reference_number,
             totalAmount,
-            'https://eda1-2800-300-6a51-5170-8590-9ede-56cf-3e2f.ngrok-free.app/payments/webpay/commit-trx/',
+            this.callbackUrl,
         );
 
         if (trx_response) {
@@ -75,7 +84,19 @@ export class PaymentsService {
         };
     }
 
-    async commitWebpayPayment(token: string) {
+    /**
+     * Confirma una transacción de Webpay utilizando el token proporcionado y actualiza las notas de cobro asociadas.
+     * Este endpoint debe ser llamado solamente por el callback de Webpay después de que el usuario complete el pago.
+     * @param token - Token de la transacción Webpay.
+     * @returns Objeto Payment actualizado con el estado de la transacción.
+     * @throws BadRequestException si el token es inválido o si la transacción falla.
+     * @throws BadRequestException si no se encuentra el pago asociado al token.
+     */
+    async commitWebpayPayment(token: string): Promise<Payment> {
+        if (!token) {
+            throw new BadRequestException('Token is required to commit the transaction');
+        }
+        
         const trx = new WebpayPlus.Transaction(
             new Options(
                 IntegrationCommerceCodes.WEBPAY_PLUS,
@@ -84,19 +105,11 @@ export class PaymentsService {
             )
         );
 
-        console.log('Committing transaction with token:', token);
-        if (!token) {
-            throw new BadRequestException('Token is required to commit the transaction');
-        }
-
         const commitResponse = await trx.commit(token);
-        // revisar
 
         if (!commitResponse) {
             throw new BadRequestException('Failed to commit Webpay transaction');
         }
-
-        console.log('Commit response:', commitResponse);
 
         if (commitResponse.response_code !== 0) {
             throw new BadRequestException(`Webpay transaction failed with response code: ${commitResponse.response_code}`);
