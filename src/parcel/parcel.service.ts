@@ -29,15 +29,22 @@ export class ParcelService {
             return this.parcelRepository.findOneBy({ numero_parcela });
         }
     
-        async updateParcel(id_parcel: number, updateParcelDto: CreateParcelDto): Promise<Parcel | null> {
-            const parcel = await this.parcelRepository.findOneBy({ id_parcel });
-            if (!parcel) {
-                return null; // Parcel not found
-            }
-    
-            parcel.numero_parcela = updateParcelDto.numero_parcela;
-    
-            return await this.parcelRepository.save(parcel);
+        async updateParcelNumber(id_parcel: number, numero_parcela: string): Promise<Parcel | null> {
+        const parcel = await this.parcelRepository.findOne({
+        where: { id_parcel },
+        relations: ['users'], // <-- Esto carga los usuarios asociados
+        });
+            if (!parcel) throw new Error('Parcel not found');
+
+  // 2. Actualiza el número de parcela
+        parcel.numero_parcela = numero_parcela;
+        await this.parcelRepository.save(parcel);
+
+  // 3. Vuelve a buscar la parcela con relaciones actualizadas (opcional, pero recomendado)
+        return this.parcelRepository.findOne({
+            where: { id_parcel },
+            relations: ['users'],
+        });
         }
     
         async removeParcel(id_parcel: number): Promise<void> {

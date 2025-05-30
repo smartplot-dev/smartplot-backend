@@ -1,5 +1,6 @@
-import { Entity, Column, PrimaryGeneratedColumn, OneToMany, JoinColumn } from 'typeorm';
+import { Entity, Column, PrimaryGeneratedColumn, OneToMany, JoinColumn, ManyToMany, JoinTable } from 'typeorm';
 import { Notice } from './notice.entity';
+import { Parcel } from './parcel.entity';
 
 @Entity('users')
 export class User {
@@ -39,4 +40,16 @@ export class User {
     @OneToMany(() => Notice, notice => notice.uploadedBy, { eager: true })
     @JoinColumn({ name: 'uploaded_by' })
     notices: Notice[];
+
+    @ManyToMany(() => Parcel, parcel => parcel.users)
+    @JoinTable({name: 'user_parcel',
+        joinColumn: { name: 'user_id',
+             referencedColumnName: 'id',
+            foreignKeyConstraintName:'user_parcel_user_id' }, // Name of the join column in the user_parcel table
+        inverseJoinColumn: { name: 'parcel_id',
+             referencedColumnName: 'id_parcel',
+            foreignKeyConstraintName:'user_parcel_parcel_id' } // Name of the join column in the user_parcel table
+    }) // Name of the join table)
+    parcels: Parcel[]; // Many-to-many relationship with Parcel entity
+    
 }

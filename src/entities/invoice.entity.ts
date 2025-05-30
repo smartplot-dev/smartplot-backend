@@ -18,7 +18,7 @@ export class Invoice {
     @Column({ type: 'timestamp', default: () => 'CURRENT_TIMESTAMP' })
     invoice_date: Date;
 
-    @Column({ type: 'timestamp' })
+    @Column({ type: 'timestamp',default: () => 'CURRENT_TIMESTAMP' })
     due_date: Date;
 
     @Column({ type: 'varchar', length: 50 })

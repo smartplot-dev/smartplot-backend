@@ -22,4 +22,5 @@ export class CreateUserDto {
 
     @ApiProperty({ example: 'sm4r7pl07', description: 'Contraseña del usuario' })
     password: string;
+    parcel_ids: number[]; // Optional array of parcel IDs to associate with the user
 }
