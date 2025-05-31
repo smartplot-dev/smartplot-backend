@@ -1,6 +1,7 @@
 import { Entity, Column, PrimaryGeneratedColumn , OneToMany,ManyToMany} from 'typeorm';
 import { Invoice } from './invoice.entity';
 import { User } from './user.entity';
+import { Meter } from './meter.entity';
 
 @Entity('parcel')
 export class Parcel {
@@ -12,6 +13,8 @@ export class Parcel {
 
     @OneToMany(() => Invoice, invoice => invoice.parcel, { eager: true })
     invoices: Invoice[];
+    @OneToMany(() => Meter, meter => meter.parcel, { eager: true })
+    meters: Meter[];
 
     @ManyToMany(() => User, user => user.parcels)   
     users: User[];

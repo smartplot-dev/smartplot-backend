@@ -3,7 +3,7 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { Parcel } from 'src/entities/parcel.entity';
 import { CreateParcelDto } from 'src/dto/create-parcela.dto';
-
+import { Meter } from 'src/entities/meter.entity';
 @Injectable()
 export class ParcelService {
     constructor(
@@ -13,7 +13,7 @@ export class ParcelService {
     
         async createParcel(createParcelDto: CreateParcelDto): Promise<Parcel> {
             const parcel = new Parcel();
-            parcel.numero_parcela = createParcelDto.numero_parcela
+            parcel.numero_parcela = createParcelDto.numero_parcela // Asegúrate de que meters sea una entidad Meter válida
             return await this.parcelRepository.save(parcel);
         }
     

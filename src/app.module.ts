@@ -2,6 +2,7 @@ import { Module } from '@nestjs/common';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { UsersModule } from './users/users.module';
+import { MeterModule } from './meter/meter/meter.module';
 import { ParcelModule } from './parcel/parcel.module';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { ConfigModule } from '@nestjs/config';
@@ -12,6 +13,7 @@ import { JwtGuard } from './guards/jwt.guard';
 import { NoticesModule } from './notices/notices.module';
 import { InvoiceModule } from './invoice/invoice.module';
 import { PaymentsModule } from './payments/payments.module';
+import { Meter } from './entities/meter.entity';
 
 @Module({
   imports: [
@@ -36,6 +38,7 @@ import { PaymentsModule } from './payments/payments.module';
     NoticesModule,
     InvoiceModule,
     PaymentsModule,
+    MeterModule,
   ],
   controllers: [AppController],
   providers: [
