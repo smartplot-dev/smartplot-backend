@@ -24,7 +24,7 @@ export class AuthService {
     }
 
     async login(user: User): Promise<{ access_token: string }> {
-        const payload = { rut: user.rut, sub: user.id };
+        const payload = { rut: user.rut, sub: user.id, role: user.role }; // 'sub' is a common convention for the user ID in JWT payloads
         const accessToken = this.jwtService.sign(payload);
         return { access_token: accessToken };
     }

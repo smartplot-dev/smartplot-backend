@@ -13,66 +13,106 @@ import { UsersService } from './users.service';
 import { CreateUserDto } from 'src/dto/create-user.dto';
 import { User } from 'src/entities/user.entity';
 import { UpdateUserDto } from 'src/dto/update-user.dto';
-
+import { ApiOperation } from '@nestjs/swagger';
+import { Roles } from 'src/decorators/roles.decorator';
+import { Role } from 'src/enums/role.enum';
+import { Public } from 'src/decorators/public.decorator'
 
 @Controller('users')
+@Roles(Role.Admin)
 export class UsersController {
     constructor(
         private readonly usersService: UsersService
     ) {}
 
+    @ApiOperation({
+        summary: 'Crear un nuevo usuario',
+        description: 'Permite crear un nuevo usuario en el sistema. Requiere los datos del usuario (ver CreateUserDto). Solo los administradores pueden crear usuarios.',
+    })
     @Post()
     create(@Body() createUserDto: CreateUserDto): Promise<User> {
         return this.usersService.createUser(createUserDto);
     }
 
+    @ApiOperation({
+        summary: 'Obtener todos los usuarios',
+        description: 'Retorna un array de todos los usuarios registrados en el sistema. Este endpoint es accesible solo para administradores.',
+    })
     @Get()
     getAll(): Promise<User[]> {
         return this.usersService.findAllUsers();
     }
 
+    @ApiOperation({
+        summary: 'Obtener un usuario por ID',
+        description: 'Retorna un usuario específico por su ID. Si no se encuentra, retorna null. Administradores y propietarios de parcelas pueden acceder a este endpoint.',
+    })
     @Get(':id')
+    @Roles(Role.Admin, Role.ParcelOwner)
     getById(@Param('id', ParseIntPipe) id: number): Promise<User | null> {
         return this.usersService.findUserById(id);
     }
 
+    @ApiOperation({
+        summary: 'Obtener un usuario por RUT',
+        description: 'Retorna un usuario específico por su RUT. Si no se encuentra, retorna null. Este endpoint es accesible para administradores y propietarios de parcelas.',
+    })
     @Get('rut/:rut')
+    @Roles(Role.Admin, Role.ParcelOwner)
     getByRut(@Param('rut') rut: string): Promise<User | null> {
         return this.usersService.findUserByRut(rut);
     }
 
+    @ApiOperation({
+        summary: 'Actualizar un usuario por ID',
+        description: 'Permite actualizar los datos de un usuario específico por su ID. Requiere los nuevos datos del usuario (ver UpdateUserDto). Este endpoint es accesible para administradores y propietarios de parcelas.',
+    })
     @Put(':id')
+    @Roles(Role.Admin, Role.ParcelOwner)
     update(@Param('id', ParseIntPipe) id: number, @Body() updateUserDto: UpdateUserDto): Promise<User | null> {
         return this.usersService.updateUser(id, updateUserDto);
     }
 
+    @ApiOperation({
+        summary: 'Eliminar un usuario por ID',
+        description: 'Permite eliminar un usuario específico por su ID. Si el usuario no existe, no realiza ninguna acción. Este endpoint es accesible solo para administradores.',
+    })
     @Delete(':id')
     delete(@Param('id', ParseIntPipe) id: number): Promise<void> {
         return this.usersService.removeUser(id);
     }
-    //modificar parcelas por id a un usuario
+
+   @ApiOperation({
+        summary: 'Actualizar los parcel_ids de un usuario',
+        description: 'Permite actualizar los parcel_ids asociados a un usuario específico por su ID. Requiere un array de parcel_ids en el cuerpo de la solicitud. Este endpoint es accesible solo para administradores.',
+    })
     @Patch(':id/parcel_id')
-    async updateUserParcels(
-    @Param('id', ParseIntPipe) id: number,
-    @Body('parcel_ids') parcelIds: number[],
-    ): Promise<User> {
-    return this.usersService.updateUserParcels(id, parcelIds);
+    async updateUserParcels(@Param('id', ParseIntPipe) id: number,
+                            @Body('parcel_ids') parcelIds: number[]): Promise<User> {
+        return this.usersService.updateUserParcels(id, parcelIds);
     }
-    // eliminar parcel_id de un usuario
+
+    @ApiOperation({
+        summary: 'Eliminar parcela asociada a un usuario',
+        description: 'Permite eliminar una parcela específica asociada a un usuario por su ID. Requiere el ID del usuario y el ID de la parcela a eliminar. Este endpoint es accesible solo para administradores.',
+    })
     @Delete(':userId/parcel/:parcelId')
-    async removeParcelFromUser(
-    @Param('userId', ParseIntPipe) userId: number,
-    @Param('parcelId', ParseIntPipe) parcelId: number,
-    ): Promise<User> {
-    return this.usersService.removeParcelFromUser(userId, parcelId);
+    async removeParcelFromUser(@Param('userId', ParseIntPipe) userId: number,
+                                @Param('parcelId', ParseIntPipe) parcelId: number,
+                                ): Promise<User> {
+        return this.usersService.removeParcelFromUser(userId, parcelId);
     }
-    // agregar parcel_id a un usuario
+    
+    @ApiOperation({
+        summary: 'Agregar parcela a un usuario',
+        description: 'Permite agregar una parcela específica a un usuario por su ID. Requiere el ID del usuario y el ID de la parcela a agregar. Este endpoint es accesible solo para administradores.',
+    })
     @Patch(':userId/add-parcel/:parcelId')
     async addParcelToUser(
-    @Param('userId', ParseIntPipe) userId: number,
-    @Param('parcelId', ParseIntPipe) parcelId: number,
-    ): Promise<User> {
-    return this.usersService.addParcelToUser(userId, parcelId);
+            @Param('userId', ParseIntPipe) userId: number,
+            @Param('parcelId', ParseIntPipe) parcelId: number,
+        ): Promise<User> {
+        return this.usersService.addParcelToUser(userId, parcelId);
     }
 
     

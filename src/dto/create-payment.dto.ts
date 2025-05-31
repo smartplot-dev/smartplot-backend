@@ -4,7 +4,7 @@ export class CreatePaymentDto {
 
     @ApiProperty({
         type: String,
-        example: 'transferencia',
+        example: 'webpay',
         description: 'Método de pago utilizado (ejemplo: webpay, transferencia, efectivo)',
     })
     payment_method: string;
@@ -36,7 +36,7 @@ export class CreatePaymentDto {
     @ApiProperty({
         type: [Number],
         example: [1, 2, 3],
-        description: 'Lista de IDs de facturas asociadas al pago',
+        description: 'Lista de IDs de notas de cobro asociadas al pago',
     })
     invoices: number[];
 }

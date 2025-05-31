@@ -10,6 +10,7 @@ import { AuthModule } from './auth/auth.module';
 import { JwtStrategy } from './auth/jwt.strategy';
 import { APP_GUARD } from '@nestjs/core';
 import { JwtGuard } from './guards/jwt.guard';
+import { RolesGuard } from './guards/roles.guard';
 import { NoticesModule } from './notices/notices.module';
 import { InvoiceModule } from './invoice/invoice.module';
 import { PaymentsModule } from './payments/payments.module';
@@ -45,7 +46,7 @@ import { Meter } from './entities/meter.entity';
     AppService,
     {
       provide: APP_GUARD,
-      useClass: JwtGuard, // Use the JwtGuard globally
+      useClass: RolesGuard, // use the RolesGuard globally, use public decorator to override it
     },
     JwtStrategy,
   ],

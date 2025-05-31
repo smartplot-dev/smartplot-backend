@@ -87,6 +87,7 @@ export class PaymentsService {
     /**
      * Confirma una transacción de Webpay utilizando el token proporcionado y actualiza las notas de cobro asociadas.
      * Este endpoint debe ser llamado solamente por el callback de Webpay después de que el usuario complete el pago.
+     * (no debe ser llamado directamente por el cliente/frontend)
      * @param token - Token de la transacción Webpay.
      * @returns Objeto Payment actualizado con el estado de la transacción.
      * @throws BadRequestException si el token es inválido o si la transacción falla.

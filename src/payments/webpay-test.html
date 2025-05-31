@@ -1,0 +1,14 @@
+<!-- Este archivo sirve para acceder al formulario de pago de WebPay tras iniciar la transacción en el backend
+     Puede servir como una guía para integrar los pagos con el frontend, la idea es redirigir al usuario a la URL
+     con el token que devuelve la API -->
+<!DOCTYPE html>
+<html>
+  <body onload="document.forms[0].submit()">
+    <form action="https://webpay3gint.transbank.cl/webpayserver/initTransaction" method="POST">
+      <input type="hidden" name="token_ws" value="INSERT-TOKEN-HERE" />
+      <noscript>
+        <input type="submit" value="Pagar" />
+      </noscript>
+    </form>
+  </body>
+</html>

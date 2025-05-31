@@ -37,6 +37,9 @@ export class User {
     @Column({ type: 'timestamp', nullable: true })
     updated_at: Date;
 
+    @Column({ default: 'parcel_owner', type: 'varchar', length: 50 })
+    role: string;
+
     @OneToMany(() => Notice, notice => notice.uploadedBy, { eager: true })
     @JoinColumn({ name: 'uploaded_by' })
     notices: Notice[];
