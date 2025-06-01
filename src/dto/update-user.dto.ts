@@ -22,4 +22,7 @@ export class UpdateUserDto {
 
     @ApiProperty({ example: 'sm4r7pl07', description: 'Contraseña del usuario', required: false })
     password?: string;
+
+    @ApiProperty({ example: 'parcel_owner', description: 'Rol del usuario', enum: ['"admin"', '"employee"', '"parcel_owner"'], required: false })
+    role?: string;
 }

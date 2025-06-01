@@ -4,14 +4,14 @@ export class CreateInvoiceDto {
 
     @ApiProperty({
         type: String,
-        example: 'Gastos comunes de septiembre',
+        example: 'Gastos comunes',
         description: 'Tipo/categoría de la nota de cobro'
     })
     invoice_category: string;
 
     @ApiProperty({
         type: String,
-        example: 'Pago de servicios y mantenimiento del camino de acceso',
+        example: 'Gastos comunes del mes de septiembre',
         description: 'Descripción de la nota de cobro',
         required: false
     })
@@ -41,8 +41,8 @@ export class CreateInvoiceDto {
 
     @ApiProperty({
         type: String,
-        example: 'pendiente',
-        description: 'Estado de la nota de cobro (ejemplo: pendiente, pagada, vencida)'
+        example: 'pending',
+        description: 'Estado de la nota de cobro (ejemplo: pending, paid, overdue)'
     })
     status: string;
 }

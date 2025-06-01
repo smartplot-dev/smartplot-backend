@@ -1,9 +1,10 @@
-import { BadRequestException, Injectable } from '@nestjs/common';
+import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { Invoice } from 'src/entities/invoice.entity';
 import { CreateInvoiceDto } from 'src/dto/create-invoice.dto';
 import { ParcelService } from 'src/parcel/parcel.service';
+import { UsersService } from 'src/users/users.service';
 
 @Injectable()
 export class InvoiceService {
@@ -11,19 +12,36 @@ export class InvoiceService {
         @InjectRepository(Invoice)
         private readonly invoiceRepository: Repository<Invoice>,
         private readonly parcelService: ParcelService,
+        private readonly usersService: UsersService,
     ) {}
 
     async createInvoice(createInvoiceDto: CreateInvoiceDto, id_parcel: number): Promise<Invoice> {
         const invoice = new Invoice();
         invoice.invoice_category = createInvoiceDto.invoice_category;
+        if(createInvoiceDto.invoice_category) {
+            invoice.invoice_category = createInvoiceDto.invoice_category;
+        } else {
+            throw new BadRequestException('Invoice category is required');
+        }
         if (createInvoiceDto.invoice_description) {
             invoice.invoice_description = createInvoiceDto.invoice_description;
         }
+        if( !createInvoiceDto.amount || createInvoiceDto.amount <= 0 ) {
+            throw new BadRequestException('Invalid amount or not provided');
+        }
         invoice.amount = createInvoiceDto.amount;
+
         if( createInvoiceDto.invoice_date ) {
             invoice.invoice_date = createInvoiceDto.invoice_date;
         }
+        if (!invoice.due_date) {
+            throw new BadRequestException('Invoice due date is required');
+        }
         invoice.due_date = createInvoiceDto.due_date;
+
+        if (!createInvoiceDto.status) {
+            createInvoiceDto.status = 'pending';
+        }
         invoice.status = createInvoiceDto.status;
 
         const parcel = await this.parcelService.findParcelById(id_parcel);
@@ -64,5 +82,42 @@ export class InvoiceService {
         }
         Object.assign(invoice, updateData);
         return await this.invoiceRepository.save(invoice);
+    }
+
+    async findInvoiceByIdWithParcels(id: number): Promise<Invoice> {
+        const invoice = await this.invoiceRepository.findOne({
+            where: { id },
+            relations: ['parcel'],
+        });
+        if (!invoice) {
+            throw new NotFoundException('Invoice not found');
+        }
+        return invoice;
+    }
+
+    // FIXME!
+    async findInvoicesByUser(userId: number): Promise<Invoice[]> {
+        const user = await this.usersService.findUserById(userId);
+        if (!user) {
+            throw new NotFoundException('User not found');
+        }
+        user.parcels = await this.parcelService.findUserParcels(userId);
+        if (!user.parcels || user.parcels.length === 0) {
+            throw new NotFoundException('No parcels found for this user, cannot retrieve invoices');
+        }
+        const invoices: Invoice[] = [];
+        for (const parcel of user.parcels) {
+            const parcelInvoices = await this.invoiceRepository.find({
+                where: { parcel: { id_parcel: parcel.id_parcel } },
+            });
+            for (const inv of parcelInvoices) {
+                inv.parcel = parcel; // Associate the parcel with the invoice
+                invoices.push(inv);
+            }
+        }
+        if (invoices.length === 0) {
+            throw new NotFoundException('No invoices found for this user');
+        }
+        return invoices;
     }
 }

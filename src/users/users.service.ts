@@ -24,9 +24,14 @@ export class UsersService {
     }
 
     async createUser(createUserDto: CreateUserDto): Promise<User> {
+        // validate that createUserDto is not empty
+        if (!createUserDto || Object.keys(createUserDto).length === 0) {
+            throw new BadRequestException('CreateUserDto cannot be empty');
+        }
         const user = new User();
         user.name = createUserDto.name;
         user.paternal_surname = createUserDto.paternal_surname;
+        user.role = createUserDto.role; // Ensure role is set
         if(createUserDto.maternal_surname) {
             user.maternal_surname = createUserDto.maternal_surname;
         }

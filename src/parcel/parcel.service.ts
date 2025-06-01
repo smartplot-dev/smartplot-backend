@@ -1,9 +1,10 @@
-import { Injectable } from '@nestjs/common';
+import { BadRequestException, Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { Parcel } from 'src/entities/parcel.entity';
 import { CreateParcelDto } from 'src/dto/create-parcela.dto';
 import { Meter } from 'src/entities/meter.entity';
+import { User } from 'src/entities/user.entity';
 @Injectable()
 export class ParcelService {
     constructor(
@@ -12,6 +13,10 @@ export class ParcelService {
         ) {}
     
         async createParcel(createParcelDto: CreateParcelDto): Promise<Parcel> {
+            // validate that createParcelDto is not empty
+            if (!createParcelDto || !createParcelDto.numero_parcela) {
+                throw new BadRequestException('createParcelDto is required and must contain a numero_parcela');
+            }
             const parcel = new Parcel();
             parcel.numero_parcela = createParcelDto.numero_parcela // Asegúrate de que meters sea una entidad Meter válida
             return await this.parcelRepository.save(parcel);
@@ -52,5 +57,25 @@ export class ParcelService {
             if (parcel) {
                 await this.parcelRepository.remove(parcel);
             }
+        }
+
+        async findUserParcels(userId: number): Promise<Parcel[]> {
+            return this.parcelRepository.find({
+                where: { users: { id: userId } },
+                relations: ['users', 'meters'],
+            });
+        }
+
+        async findParcelOwners(parcelId: number): Promise<User[]> {
+            const parcel = await this.parcelRepository.findOne({
+                where: { id_parcel: parcelId },
+                relations: ['users'],
+            });
+
+            if (!parcel) {
+                throw new BadRequestException('Parcel not found');
+            }
+
+            return parcel.users;
         }
 }

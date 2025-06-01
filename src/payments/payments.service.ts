@@ -7,7 +7,11 @@ import { StartTrxResponseDto } from 'src/dto/start-trx-response.dto';
 import { InvoiceService } from 'src/invoice/invoice.service';
 import { Invoice } from 'src/entities/invoice.entity';
 import { WebpayPlus } from 'transbank-sdk';
+import { UsersService } from 'src/users/users.service';
 import { Options, IntegrationApiKeys, Environment, IntegrationCommerceCodes } from 'transbank-sdk';
+import { PaymentStatus } from 'src/enums/payment-status.enum';
+import { PaymentMethod } from 'src/enums/payment-methods.enum';
+import { InvoiceStatus } from 'src/enums/invoice-status.enum';
 
 @Injectable()
 export class PaymentsService {
@@ -15,6 +19,7 @@ export class PaymentsService {
         @InjectRepository(Payment)
         private readonly paymentRepository: Repository<Payment>,
         private readonly invoiceService: InvoiceService,
+        private readonly usersService: UsersService,
     ) {}
 
     // callback URL for commiting webpay transactions
@@ -28,13 +33,26 @@ export class PaymentsService {
      * @throws BadRequestException si hay un error al crear la transacción o si las notas de cobro no son válidas.
      */
     async startWebpayPayment(
-        createPaymentDto: CreatePaymentDto
+        createPaymentDto: CreatePaymentDto,
+        userId: number,
     ): Promise<StartTrxResponseDto> {
+        if (!createPaymentDto.invoices || createPaymentDto.invoices.length === 0) {
+            throw new BadRequestException('At least one invoice must be provided for Webpay payments');
+        }
+
         const payment = new Payment();
-        payment.payment_method = 'webpay';
+        payment.payment_method = PaymentMethod.Webpay;
         payment.payment_date = new Date();
         payment.notes = createPaymentDto.notes || 'N/A';
-        payment.status = 'pending';
+        payment.status = PaymentStatus.Pending;
+
+        // get user from userId
+        const user = await this.usersService.findUserById(userId);
+        if (!user || !userId) {
+            throw new BadRequestException('User not found, cannot create payment');
+        }
+
+        payment.user = user;
 
         const invoiceEntities = new Array<Invoice>();
         for (const inv of createPaymentDto.invoices) {
@@ -73,7 +91,7 @@ export class PaymentsService {
             savedPayment.reference_number = trx_response.token;
             await this.paymentRepository.save(savedPayment);
         } else {
-            savedPayment.status = 'failed';
+            savedPayment.status = PaymentStatus.Failed;
             await this.paymentRepository.save(savedPayment);
             throw new BadRequestException('Failed to create Webpay transaction');
         }
@@ -97,6 +115,15 @@ export class PaymentsService {
         if (!token) {
             throw new BadRequestException('Token is required to commit the transaction');
         }
+
+        const payment = await this.paymentRepository.findOne({
+            where: { reference_number: token },
+            relations: ['invoices'],
+        });
+
+        if (!payment) {
+            throw new BadRequestException(`Payment not found for transaction token: ${token}`);
+        }
         
         const trx = new WebpayPlus.Transaction(
             new Options(
@@ -109,25 +136,20 @@ export class PaymentsService {
         const commitResponse = await trx.commit(token);
 
         if (!commitResponse) {
+            payment.status = PaymentStatus.Failed;
+            await this.paymentRepository.save(payment);
             throw new BadRequestException('Failed to commit Webpay transaction');
         }
 
         if (commitResponse.response_code !== 0) {
+            payment.status = PaymentStatus.Failed;
+            payment.notes = `Webpay transaction failed with response code: ${commitResponse.response_code}`;
             throw new BadRequestException(`Webpay transaction failed with response code: ${commitResponse.response_code}`);
-        }
+        } 
 
-        const payment = await this.paymentRepository.findOne({
-            where: { reference_number: token },
-            relations: ['invoices'],
-        });
-
-        if (!payment) {
-            throw new BadRequestException('Payment not found for the provided token');
-        }
-
-        payment.status = 'completed';
+        payment.status = PaymentStatus.Completed;
         payment.invoices.forEach(invoice => {
-            invoice.status = 'paid';
+            invoice.status = InvoiceStatus.Paid;
             this.invoiceService.updateInvoice(invoice.id, { status: 'paid' });
         });
         payment.transaction_date = commitResponse.transaction_date;
@@ -143,10 +165,90 @@ export class PaymentsService {
     }
 
     async findPaymentById(id: number): Promise<Payment | null> {
+        if (!id) {
+            throw new BadRequestException('Payment ID is required');
+        }
         return await this.paymentRepository.findOne({
             where: { id: id },
             relations: ['invoices'],
         });
     }
 
+    async findPaymentsByInvoice(invoiceId: number): Promise<Payment[]> {
+        if (!invoiceId) {
+            throw new BadRequestException('Invoice ID is required');
+        }
+        return await this.paymentRepository.find({
+            where: { invoices: { id: invoiceId } },
+            relations: ['invoices'],
+        });
+    }
+
+    async findPaymentsByUser(userId: number): Promise<Payment[]> {
+        if (!userId) {
+            throw new BadRequestException('User ID is required');
+        }
+        return await this.paymentRepository.find({
+            where: { user: { id: userId } },
+            relations: ['user', 'invoices'],
+        });
+    }
+
+    async createManualPayment(
+        createPaymentDto: CreatePaymentDto,
+        userId: number,
+    ): Promise<Payment> {
+        if (!userId) {
+            throw new BadRequestException('User ID is required to create a manual payment');
+        }
+        // if createPaymentDto is not provided, throw an error
+        if (!createPaymentDto || Object.keys(createPaymentDto).length === 0) {
+            throw new BadRequestException('CreatePaymentDto is required to create a manual payment');
+        }
+
+        const user = await this.usersService.findUserById(userId);
+        if (!user) {
+            throw new BadRequestException('User not found, cannot create payment');
+        }
+
+        const payment = new Payment();
+        if(createPaymentDto.payment_method === PaymentMethod.Webpay) {
+            throw new BadRequestException('Cannot create manual payment with Webpay method');
+        }
+
+        if (!createPaymentDto.invoices || createPaymentDto.invoices.length === 0) {
+            throw new BadRequestException('At least one invoice must be provided for manual payments');
+        }
+
+        // get 2 first characters of the payment method to generate an internal reference number
+        const methodPrefix = createPaymentDto.payment_method.slice(0, 2).toUpperCase();
+        const internalReferenceNumber = `${methodPrefix}-${Date.now()}`;
+        payment.internal_reference_number = internalReferenceNumber;
+
+        payment.payment_method = createPaymentDto.payment_method;
+        payment.payment_date = new Date();
+        payment.notes = createPaymentDto.notes || 'N/A';
+        payment.status = createPaymentDto.status || PaymentStatus.Pending; // Assuming manual payments are completed immediately
+        payment.user = user;
+
+        const invoiceEntities = new Array<Invoice>();
+        for (const inv of createPaymentDto.invoices) {
+            const invoice = await this.invoiceService.findInvoiceById(inv);
+            if (!invoice) {
+                throw new BadRequestException(`Invoice with ID ${inv} not found`);
+            }
+            invoiceEntities.push(invoice);
+        }
+        payment.invoices = invoiceEntities;
+        const totalAmount = invoiceEntities.reduce((sum, invoice) => sum + invoice.amount, 0);
+        payment.amount = totalAmount;
+
+        // update invoices status to paid
+        payment.invoices.forEach(invoice => {
+            invoice.status = InvoiceStatus.Paid;
+            this.invoiceService.updateInvoice(invoice.id, { status: InvoiceStatus.Paid });
+        });
+    
+        return await this.paymentRepository.save(payment);
+    }
 }

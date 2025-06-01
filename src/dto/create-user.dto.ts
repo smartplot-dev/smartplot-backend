@@ -23,6 +23,9 @@ export class CreateUserDto {
     @ApiProperty({ example: 'sm4r7pl07', description: 'Contraseña del usuario' })
     password: string;
 
+    @ApiProperty({ example: 'parcel_owner', description: 'Rol del usuario', enum: ['"admin"', '"employee"', '"parcel_owner"'] })
+    role: string;
+
     @ApiProperty({ example: '[1, 2, 3]', description: 'Array de ids de las parcelas asociadas al usuario',required: false })
     parcel_ids: number[]; 
 }

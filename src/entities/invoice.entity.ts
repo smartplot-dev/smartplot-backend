@@ -13,7 +13,7 @@ export class Invoice {
     @Column({ type: 'varchar', length: 50, nullable: true })
     invoice_description: string;
 
-    @Column({ type: 'decimal', precision: 10, scale: 2 })
+    @Column({ type: 'int' })
     amount: number;
 
     @Column({ type: 'timestamp', default: () => 'CURRENT_TIMESTAMP' })

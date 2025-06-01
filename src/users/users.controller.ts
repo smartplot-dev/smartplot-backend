@@ -7,7 +7,11 @@ import {
     Post,
     ParseIntPipe,
     Put,
-    Patch
+    Patch,
+    Request,
+    UnauthorizedException,
+    NotFoundException,
+    BadRequestException
  } from '@nestjs/common';
 import { UsersService } from './users.service';
 import { CreateUserDto } from 'src/dto/create-user.dto';
@@ -17,6 +21,7 @@ import { ApiOperation } from '@nestjs/swagger';
 import { Roles } from 'src/decorators/roles.decorator';
 import { Role } from 'src/enums/role.enum';
 import { Public } from 'src/decorators/public.decorator'
+import { canViewUser, canViewUserRut } from 'src/auth/policies/user.policy';
 
 @Controller('users')
 @Roles(Role.Admin)
@@ -49,7 +54,20 @@ export class UsersController {
     })
     @Get(':id')
     @Roles(Role.Admin, Role.ParcelOwner)
-    getById(@Param('id', ParseIntPipe) id: number): Promise<User | null> {
+    async getById(@Param('id', ParseIntPipe) id: number, @Request() req): Promise<User | null> {
+        // Check if the user has permission to view this user
+        if (!id || isNaN(id)) {
+            throw new BadRequestException('User ID is required.');
+        }
+        const requestingUser = await this.usersService.findUserById(req.user.sub);
+        if (!requestingUser) {
+            throw new NotFoundException('User not found.');
+        }
+        if (!canViewUser({ id: requestingUser.id, role: requestingUser.role }, id)) {
+            console.log(`User with ID ${requestingUser.id} attempted to access user with ID ${id} without permission.`);
+            throw new UnauthorizedException('Access denied: You do not have permission to view this user.');
+        }
+        console.log(`User with ID ${requestingUser.id} and role ${requestingUser.role} accessed user with ID ${id}.`);
         return this.usersService.findUserById(id);
     }
 
@@ -59,7 +77,12 @@ export class UsersController {
     })
     @Get('rut/:rut')
     @Roles(Role.Admin, Role.ParcelOwner)
-    getByRut(@Param('rut') rut: string): Promise<User | null> {
+    getByRut(@Param('rut') rut: string, @Request() req): Promise<User | null> {
+        // Check if the user has permission to view this user by RUT
+        const requestingUser = req.user;
+        if (!canViewUserRut({ rut: requestingUser.rut, role: requestingUser.role }, rut)) {
+            throw new UnauthorizedException('Access denied: You do not have permission to view this user.');
+        }
         return this.usersService.findUserByRut(rut);
     }
 
@@ -69,7 +92,12 @@ export class UsersController {
     })
     @Put(':id')
     @Roles(Role.Admin, Role.ParcelOwner)
-    update(@Param('id', ParseIntPipe) id: number, @Body() updateUserDto: UpdateUserDto): Promise<User | null> {
+    update(@Param('id', ParseIntPipe) id: number, @Body() updateUserDto: UpdateUserDto, @Request() req): Promise<User | null> {
+        // Check if the user has permission to update this user
+        const requestingUser = req.user;
+        if (!canViewUser({ id: requestingUser.sub, role: requestingUser.role }, id)) {
+            throw new UnauthorizedException('Access denied: You do not have permission to update this user.');
+        }
         return this.usersService.updateUser(id, updateUserDto);
     }
 

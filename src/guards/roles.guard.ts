@@ -14,7 +14,7 @@ export class RolesGuard extends AuthGuard('jwt') implements CanActivate {
     async canActivate(context: ExecutionContext): Promise<boolean> {
         const isPublic = this.reflector.getAllAndOverride('isPublic', [context.getHandler(), context.getClass()]);
         if (isPublic) {
-            return true; // If the route is public, allow access
+            return true; // If the route is public, allow access (use @Public() decorator)
         }
         
         const can = await super.canActivate(context);
@@ -26,7 +26,8 @@ export class RolesGuard extends AuthGuard('jwt') implements CanActivate {
             context.getClass(),
         ]);
         if(!requiredRoles) {
-            return true; // No roles required, allow access
+            return true; // No roles required, allow access (but only if has JWT token)
+                         // useful for endpoints that require authentication but not specific roles
         }
 
         const request = context.switchToHttp().getRequest();

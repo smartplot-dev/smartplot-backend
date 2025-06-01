@@ -35,6 +35,13 @@ export class NoticesService {
         return await this.noticeRepository.find();
     }
 
+    async findAllVisibleNotices(): Promise<Notice[]> {
+        return await this.noticeRepository.find({
+            where: { visible: true },
+            order: { created_at: 'DESC' },
+        });
+    }
+
     async findNoticeById(id: number): Promise<Notice | null> {
         return this.noticeRepository.findOneBy({ id });
     }

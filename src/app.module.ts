@@ -30,7 +30,7 @@ import { Meter } from './entities/meter.entity';
       database: process.env.DB_NAME || 'smartplot',
       entities: [__dirname + '/entities/*.entity{.ts,.js}'],
       synchronize: true, // set to false in production!
-      logging: true, // enable logging for debugging
+      logging: false, // enable logging for debugging
       autoLoadEntities: true,
     }),
     UsersModule,

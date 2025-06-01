@@ -35,12 +35,22 @@ export class NoticesController {
 
     @ApiOperation({
         summary: 'Obtener todos los avisos',
-        description: 'Retorna un array de todos los avisos registrados en el sistema. Administradores y propietarios de parcelas pueden acceder a este endpoint.',
+        description: 'Retorna un array de todos los avisos registrados en el sistema. Solo administradores pueden acceder a este endpoint.',
     })
     @Get()
-    @Roles(Role.Admin, Role.ParcelOwner)
+    @Roles(Role.Admin)
     getAll(): Promise<Notice[]> {
         return this.noticesService.findAllNotices();
+    }
+
+    @ApiOperation({
+        summary: 'Obtener todos los avisos visibles para propietarios de parcelas',
+        description: 'Retorna un array de todos los avisos que son visibles para los propietarios de parcelas. Administradores y propietarios de parcelas pueden acceder a este endpoint.',
+    })
+    @Get('visible')
+    @Roles(Role.Admin, Role.ParcelOwner)
+    getAllVisible(): Promise<Notice[]> {
+        return this.noticesService.findAllVisibleNotices();
     }
 
     @ApiOperation({

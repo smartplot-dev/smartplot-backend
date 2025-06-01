@@ -1,6 +1,7 @@
 import { Entity, Column, PrimaryGeneratedColumn, OneToMany, JoinColumn, ManyToMany, JoinTable } from 'typeorm';
 import { Notice } from './notice.entity';
 import { Parcel } from './parcel.entity';
+import { Payment } from './payment.entity';
 
 @Entity('users')
 export class User {
@@ -43,6 +44,10 @@ export class User {
     @OneToMany(() => Notice, notice => notice.uploadedBy, { eager: true })
     @JoinColumn({ name: 'uploaded_by' })
     notices: Notice[];
+
+    @OneToMany(() => Payment, payment => payment.user, { eager: true })
+    @JoinColumn({ name: 'user_id' })
+    payments: Payment[];
 
     @ManyToMany(() => Parcel, parcel => parcel.users)
     @JoinTable({name: 'user_parcel',
