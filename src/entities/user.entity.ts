@@ -2,6 +2,7 @@ import { Entity, Column, PrimaryGeneratedColumn, OneToMany, JoinColumn, ManyToMa
 import { Notice } from './notice.entity';
 import { Parcel } from './parcel.entity';
 import { Payment } from './payment.entity';
+import { AdminExpenses } from './admin-expenses.entity';
 
 @Entity('users')
 export class User {
@@ -59,5 +60,8 @@ export class User {
             foreignKeyConstraintName:'user_parcel_parcel_id' }
     })
     parcels: Parcel[];
+    @OneToMany(() => AdminExpenses, adminExpenses => adminExpenses.user)
+    @JoinColumn({ name: 'user_id' })
+    adminExprenses: AdminExpenses[];
     
 }

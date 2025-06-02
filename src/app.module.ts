@@ -15,6 +15,7 @@ import { NoticesModule } from './notices/notices.module';
 import { InvoiceModule } from './invoice/invoice.module';
 import { PaymentsModule } from './payments/payments.module';
 import { MeterReadingModule } from './meterReading/meter-reading/meter-reading.module';
+import { AdminExpensesModule } from './admin-expenses/admin-expenses.module';
 
 @Module({
   imports: [
@@ -41,6 +42,7 @@ import { MeterReadingModule } from './meterReading/meter-reading/meter-reading.m
     PaymentsModule,
     MeterModule,
     MeterReadingModule,
+    AdminExpensesModule,
   ],
   controllers: [AppController],
   providers: [
