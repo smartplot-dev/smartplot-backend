@@ -19,7 +19,6 @@ export class MeterReadingService {
 
   async createMeterReading(CreateMeterReadingDto:CreateMeterReadingDto , meter_id:number) : Promise<MeterReading> {
     const meter = await this.meterService.findOne(meter_id);
-    console.log('Meter encontrado:', meter);
     if (!meter) {
       throw new Error('Meter not found');
     }
@@ -140,22 +139,6 @@ export class MeterReadingService {
     meterReading.year === (meter.current_month === 1 ? meter.currentYear - 1 : meter.currentYear)
   ) {
     // Buscar la lectura previa a la anterior
-    let prevPrevMonth = meterReading.month - 1;
-    let prevPrevYear = meterReading.year;
-    if (prevPrevMonth === 0) {
-      prevPrevMonth = 12;
-      prevPrevYear = meterReading.year - 1;
-    }
-    const prevPrevReading = await this.meterReadingRepo.findOne({
-      where: {
-        meter: { id: meter.id },
-        month: prevPrevMonth,
-        year: prevPrevYear,
-      },
-    });
-    if (!prevPrevReading) {
-      throw new Error('Previous reading not found');
-    }
 
     // Buscar la lectura actual (mes actual)
     const currentReading = await this.meterReadingRepo.findOne({
@@ -169,8 +152,8 @@ export class MeterReadingService {
       throw new Error('Current reading not found');
     }
 
-    if (prevPrevReading) {
-      meter.current_consumption = currentReading.reading - prevPrevReading.reading;
+    if (meterReading) {
+      meter.current_consumption = currentReading.reading - meterReading.reading;
       if (meter.current_consumption < 0) {
         meter.current_consumption = meter.current_consumption * -1;
       }
