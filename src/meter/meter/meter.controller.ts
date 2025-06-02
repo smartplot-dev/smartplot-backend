@@ -1,4 +1,4 @@
-import { Controller, Get, Post, Param, Body , Request} from '@nestjs/common';
+import { Controller, Get, Post, Param, Body , Request, Put, Delete} from '@nestjs/common';
 import { MeterService } from './meter.service';
 import { CreateMeterDto } from 'src/dto/create-meter.dto';
 import { InjectRepository } from '@nestjs/typeorm';
@@ -23,5 +23,14 @@ export class MeterController {
   @Get(':id')
   async findOne(@Param('id') id: number) {
     return this.meterService.findOne(Number(id));
+  }
+  @Put('modificate-meter/:id')
+  async updateMeter(@Param('id') id: number, @Body() updateMeterDto: CreateMeterDto) {
+    return this.meterService.update(id, updateMeterDto);
+  }
+  @Delete('delete-meter/:id')
+  async delete(@Param('id') id: number) {
+    await this.meterService.deleteMeterAndReadings(Number(id));
+    return { message: 'Meter and its readings deleted successfully' };
   }
 }

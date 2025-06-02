@@ -7,6 +7,7 @@ import { promises } from 'dns';
 import { CreateMeterDto } from 'src/dto/create-meter.dto';
 import { Parcel } from '../../entities/parcel.entity';
 import { ParcelService } from 'src/parcel/parcel.service';
+import { MeterReadingService } from 'src/meterReading/meter-reading/meter-reading.service';
 
 @Injectable()
 export class MeterService {
@@ -14,6 +15,7 @@ export class MeterService {
     @InjectRepository(Meter)
     private meterRepo: Repository<Meter>,
     private readonly parcelService: ParcelService,
+    private readonly meterReadingService: MeterReadingService,
   ) {}
 
   async createMeter(CreateMeterDto:CreateMeterDto , parcel_id:number) : Promise<Meter> {
@@ -39,18 +41,20 @@ export class MeterService {
     });
   }
 
-  // Actualiza el consumo actual al agregar una nueva lectura
- /* async updateCurrentConsumption(meterId: number) {
-    const readings = await this.meterReadingRepo.find({
-      where: { meter: { id: meterId } },
-      order: { date: 'ASC' },
-    });
-    if (readings.length < 2) return; // No hay suficiente data para calcular consumo
-
-    const last = readings[readings.length - 1];
-    const prev = readings[readings.length - 2];
-    const consumo = last.reading - prev.reading;
-
-    await this.meterRepo.update(meterId, { current_consumption: consumo });
-  }*/
+  async update(id: number, updateMeterDto: CreateMeterDto): Promise<Meter> {
+    const meter = await this.findOne(id);
+    if (!meter) {
+      throw new Error('Meter not found');
+    }
+    Object.assign(meter, updateMeterDto);
+    return this.meterRepo.save(meter);
+  }
+  async deleteMeterAndReadings(id: number): Promise<void> {
+    const meter = await this.findOne(id);
+    if (!meter) {
+      throw new Error('Meter not found');
+    }
+    await this.meterReadingService.deleteReadingsByMeterId(id);
+    await this.meterRepo.remove(meter);
+  }
 }

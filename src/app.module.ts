@@ -14,7 +14,7 @@ import { RolesGuard } from './guards/roles.guard';
 import { NoticesModule } from './notices/notices.module';
 import { InvoiceModule } from './invoice/invoice.module';
 import { PaymentsModule } from './payments/payments.module';
-import { Meter } from './entities/meter.entity';
+import { MeterReadingModule } from './meterReading/meter-reading/meter-reading.module';
 
 @Module({
   imports: [
@@ -40,6 +40,7 @@ import { Meter } from './entities/meter.entity';
     InvoiceModule,
     PaymentsModule,
     MeterModule,
+    MeterReadingModule,
   ],
   controllers: [AppController],
   providers: [

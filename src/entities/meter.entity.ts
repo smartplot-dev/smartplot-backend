@@ -10,11 +10,21 @@ export class Meter {
 
     @Column({ type: 'varchar', length: 255 })
     meter_type: string;
+    
     @Column({ type: 'float', default: '0' })
     current_consumption: number;
+    
+    @Column({ type: 'int', nullable: true })
+    current_month: number;
+
+    @Column({ type: 'int', nullable: true })
+    prev_month: number;
+    @Column({ type: 'int', nullable: true })
+    currentYear: number;
 
     @ManyToOne(() => Parcel, parcel => parcel.meters)   
     parcel: Parcel;
-    @OneToMany(() => MeterReading, reading => reading.meter)
+    
+    @OneToMany(() => MeterReading, reading => reading.meter, { eager: true })
     readings: MeterReading[];
 }
