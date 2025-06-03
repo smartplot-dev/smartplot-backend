@@ -14,7 +14,7 @@ export class UpdateUserDto {
     @ApiProperty({ example: 'joti@smartplot.cl', description: 'Correo electrónico del usuario', required: false })
     email?: string;
 
-    @ApiProperty({ example: 56912345678, description: 'Número de teléfono del usuario (sin +)', required: false })
+    @ApiProperty({ example: 912345678, description: 'Número de teléfono del usuario (sin +56)', required: false })
     phone_number?: number;
 
     @ApiProperty({ example: '20441061-5', description: 'RUT del usuario (sin puntos y con guión)', required: false })

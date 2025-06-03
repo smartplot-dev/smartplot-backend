@@ -19,8 +19,9 @@ export class CreatePaymentDto {
 
     @ApiProperty({
         type: String,
-        example: 'pendiente',
-        description: 'Estado del pago (ejemplo: pendiente, completado, fallido). Si no se especifica, se asume "pendiente"',
+        example: 'pending',
+        description: 'Estado del pago (ejemplo: pendiente, completado, fallido). Si no se especifica, se asume "pending"',
+        enum: ['pending', 'completed', 'failed'],
         required: false
     })
     status?: string;

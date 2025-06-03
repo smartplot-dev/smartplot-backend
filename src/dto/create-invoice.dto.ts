@@ -42,7 +42,8 @@ export class CreateInvoiceDto {
     @ApiProperty({
         type: String,
         example: 'pending',
-        description: 'Estado de la nota de cobro (ejemplo: pending, paid, overdue)'
+        description: 'Estado de la nota de cobro (ejemplo: pending, paid, overdue)',
+        enum: ['pending', 'paid', 'overdue'],
     })
     status: string;
 }
