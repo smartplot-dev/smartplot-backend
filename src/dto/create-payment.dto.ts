@@ -6,6 +6,7 @@ export class CreatePaymentDto {
         type: String,
         example: 'webpay',
         description: 'Método de pago utilizado (ejemplo: webpay, transferencia, efectivo)',
+        enum: ['webpay', 'transferencia', 'efectivo'],
     })
     payment_method: string;
 
@@ -20,7 +21,7 @@ export class CreatePaymentDto {
     @ApiProperty({
         type: String,
         example: 'pending',
-        description: 'Estado del pago (ejemplo: pendiente, completado, fallido). Si no se especifica, se asume "pending"',
+        description: 'Estado del pago (ejemplo: pending, completed, failed). Si no se especifica, se asume "pending"',
         enum: ['pending', 'completed', 'failed'],
         required: false
     })
