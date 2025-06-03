@@ -1,4 +1,4 @@
-import { Controller, Get, Post, Put, Delete, Param, Body } from '@nestjs/common';
+import { Controller, Get, Post, Put, Delete, Param, Body, Request } from '@nestjs/common';
 import { AdminExpensesService } from './admin-expenses.service';
 import { AdminExpenses } from '../entities/admin-expenses.entity';
 import { CreateAdminExpensesDto } from 'src/dto/create-admin-expenses.dto';
@@ -14,9 +14,9 @@ export class AdminExpensesController {
           summary: 'Crear un nuevo gasto administrativo',
           description: 'Permite crear un nuevo gasto administrativo. Requiere los datos del gasto administrativo (ver CreateAdminExpensesDto). Solo los administradores pueden crear usuarios.',
       })
- @Post(":user_id")
-    async create(@Param('user_id') id: number,@Body() createAdminExpensesDto: CreateAdminExpensesDto): Promise<any> {
-  return this.adminExpensesService.create(id, createAdminExpensesDto);
+ @Post("")
+    async create(@Body() createAdminExpensesDto: CreateAdminExpensesDto, @Request() req): Promise<any> {
+  return this.adminExpensesService.create(req.user.sub, createAdminExpensesDto);
 }
     @ApiOperation({
           summary: 'Obtener todos los gastos administrativos',

@@ -28,7 +28,16 @@ export class UsersService {
         if (!createUserDto || Object.keys(createUserDto).length === 0) {
             throw new BadRequestException('CreateUserDto cannot be empty');
         }
+        // validate that user doesn't already exist (by RUT)
+        const existingUser = await this.userRepository.findOneBy({ rut: createUserDto.rut });
+        if (existingUser) {
+            throw new BadRequestException('User with this RUT already exists');
+        }
         const user = new User();
+        // Ensure all required fields are set
+        if (!createUserDto.name || !createUserDto.paternal_surname || !createUserDto.email || !createUserDto.rut || !createUserDto.password) {
+            throw new BadRequestException('Missing required fields');
+        }
         user.name = createUserDto.name;
         user.paternal_surname = createUserDto.paternal_surname;
         user.role = createUserDto.role; // Ensure role is set
@@ -86,6 +95,11 @@ export class UsersService {
             user.phone_number = updateUserDto.phone_number;
         }
         if (updateUserDto.rut) {
+            // Check if the new RUT already exists for another user
+            const existingUser = await this.userRepository.findOneBy({ rut: updateUserDto.rut });
+            if (existingUser && existingUser.id !== id) {
+                throw new BadRequestException('User with this RUT already exists');
+            }
             user.rut = updateUserDto.rut;
         }
         if (updateUserDto.password) {
@@ -111,7 +125,7 @@ export class UsersService {
         where: { id: userId },
         relations: ['parcels'],
         });
-        if (!user) throw new Error('User not found')
+        if (!user) throw new BadRequestException('User not found')
         user.parcels = await this.parcelRepository.find({
         where: { id_parcel: In(parcelIds) }
         });
@@ -122,7 +136,7 @@ export class UsersService {
             where: { id: userId },
             relations: ['parcels'],
         });
-        if (!user) throw new Error('User not found');
+        if (!user) throw new BadRequestException('User not found');
 
         // Filtra la parcela a eliminar
         user.parcels = user.parcels.filter(parcel => parcel.id_parcel !== parcelId);
@@ -134,10 +148,10 @@ export class UsersService {
             where: { id: userId },
             relations: ['parcels'],
         });
-        if (!user) throw new Error('User not found');
+        if (!user) throw new BadRequestException('User not found');
 
         const parcel = await this.parcelRepository.findOneBy({ id_parcel: parcelId });
-        if (!parcel) throw new Error('Parcel not found');
+        if (!parcel) throw new BadRequestException('Parcel not found');
 
         // Solo agrega si no existe ya la relación
         if (!user.parcels.some(p => p.id_parcel === parcelId)) {

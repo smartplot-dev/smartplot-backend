@@ -80,6 +80,7 @@ export class UsersController {
     getByRut(@Param('rut') rut: string, @Request() req): Promise<User | null> {
         // Check if the user has permission to view this user by RUT
         const requestingUser = req.user;
+        console.log(`Requesting user RUT: ${requestingUser.rut}, role: ${requestingUser.role}`);
         if (!canViewUserRut({ rut: requestingUser.rut, role: requestingUser.role }, rut)) {
             throw new UnauthorizedException('Access denied: You do not have permission to view this user.');
         }
