@@ -31,9 +31,6 @@ export class User {
     @Column({ type: 'varchar', length: 255 })
     password: string;
 
-    @Column({ type: 'boolean', default: true })
-    is_active: boolean;
-
     @Column({ type: 'timestamp', default: () => 'CURRENT_TIMESTAMP' })
     created_at: Date;
 
@@ -42,6 +39,9 @@ export class User {
 
     @Column({ default: 'parcel_owner', type: 'varchar', length: 50 })
     role: string;
+
+    @Column({ type: 'boolean', default: true })
+    mustChangePassword: boolean;
 
     @OneToMany(() => Notice, notice => notice.uploadedBy, { eager: true })
     @JoinColumn({ name: 'uploaded_by' })

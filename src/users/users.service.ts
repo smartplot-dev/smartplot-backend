@@ -48,10 +48,10 @@ export class UsersService {
         if(createUserDto.phone_number) {
             user.phone_number = createUserDto.phone_number;
         }
+        user.mustChangePassword = createUserDto.mustChangePassword !== undefined ? createUserDto.mustChangePassword : true; // Default to true if not provided
         // TODO: ensure RUT is unique and properly formatted (ex: 12345678-9)
         user.rut = createUserDto.rut;
         user.password = await this.hashPassword(createUserDto.password);
-        user.is_active = true;
         if (createUserDto.parcel_ids && createUserDto.parcel_ids.length > 0) {
         user.parcels = await this.parcelRepository.findByIds(createUserDto.parcel_ids);
         } 

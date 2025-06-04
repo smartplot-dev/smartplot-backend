@@ -25,4 +25,7 @@ export class UpdateUserDto {
 
     @ApiProperty({ example: 'parcel_owner', description: 'Rol del usuario', enum: ['"admin"', '"employee"', '"parcel_owner"'], required: false })
     role?: string;
+
+    @ApiProperty({ example: false, description: 'Indica si el usuario debe cambiar su contraseña en el próximo inicio de sesión', required: false })
+    mustChangePassword?: boolean;
 }

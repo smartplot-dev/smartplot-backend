@@ -28,4 +28,7 @@ export class CreateUserDto {
 
     @ApiProperty({ example: '[1, 2, 3]', description: 'Array de ids de las parcelas asociadas al usuario',required: false })
     parcel_ids: number[]; 
+
+    @ApiProperty({ example: true, description: 'Indica si el usuario debe cambiar su contraseña en su siguiente inicio de sesión, por defecto es true', required: false })
+    mustChangePassword?: boolean;
 }
