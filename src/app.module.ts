@@ -16,6 +16,7 @@ import { InvoiceModule } from './invoice/invoice.module';
 import { PaymentsModule } from './payments/payments.module';
 import { MeterReadingModule } from './meterReading/meter-reading/meter-reading.module';
 import { AdminExpensesModule } from './admin-expenses/admin-expenses.module';
+import { RemunerationModule } from './remuneration/remuneration.module';
 
 @Module({
   imports: [
@@ -43,6 +44,7 @@ import { AdminExpensesModule } from './admin-expenses/admin-expenses.module';
     MeterModule,
     MeterReadingModule,
     AdminExpensesModule,
+    RemunerationModule,
   ],
   controllers: [AppController],
   providers: [

@@ -3,6 +3,7 @@ import { Notice } from './notice.entity';
 import { Parcel } from './parcel.entity';
 import { Payment } from './payment.entity';
 import { AdminExpenses } from './admin-expenses.entity';
+import { Remuneration } from './remuneration.entity';
 
 @Entity('users')
 export class User {
@@ -64,4 +65,7 @@ export class User {
     @JoinColumn({ name: 'user_id' })
     adminExprenses: AdminExpenses[];
     
+    @OneToMany(() => Remuneration, remuneration => remuneration.registered_by, { eager: true })
+    @JoinColumn({ name: 'registered_by' })
+    remunerations: Remuneration[];
 }

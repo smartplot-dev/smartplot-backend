@@ -1,4 +1,4 @@
-import { Injectable, BadRequestException } from '@nestjs/common';
+import { Injectable, BadRequestException, InternalServerErrorException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { Payment } from 'src/entities/payment.entity';
@@ -24,8 +24,8 @@ export class PaymentsService {
 
     // callback URL for commiting webpay transactions
     // use a real URL in production, ngrok or similar for testing
-    callbackUrl = 'https://yourdomain.com/payments/webpay/commit';
-    
+    private readonly callbackUrl = process.env.TRANSBANK_RETURN_URL
+
     /**
      * Inicia una transacción con Webpay
      * @param createPaymentDto - DTO que contiene detalles del pago.
@@ -38,6 +38,10 @@ export class PaymentsService {
     ): Promise<StartTrxResponseDto> {
         if (!createPaymentDto.invoices || createPaymentDto.invoices.length === 0) {
             throw new BadRequestException('At least one invoice must be provided for Webpay payments');
+        }
+
+        if(!this.callbackUrl || this.callbackUrl === '') {
+            throw new InternalServerErrorException('Callback URL for Webpay transactions is not configured. Please set the TRANSBANK_RETURN_URL environment variable.');
         }
 
         const payment = new Payment();
