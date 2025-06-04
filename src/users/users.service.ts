@@ -105,6 +105,12 @@ export class UsersService {
         if (updateUserDto.password) {
             user.password = await this.hashPassword(updateUserDto.password);
         }
+        if (updateUserDto.role) {
+            user.role = updateUserDto.role;
+        }
+        if (updateUserDto.mustChangePassword !== undefined) {
+            user.mustChangePassword = updateUserDto.mustChangePassword;
+        }
         
         // if no fields are provided, throw bad request error
         if (!Object.keys(updateUserDto).length) {
