@@ -13,6 +13,7 @@ import { Invoice } from 'src/entities/invoice.entity';
 import { ApiOperation, ApiParam, ApiResponse } from '@nestjs/swagger';
 import { Roles } from 'src/decorators/roles.decorator';
 import { Role } from 'src/enums/role.enum';
+import { get } from 'http';
 
 @Roles(Role.Admin)
 @Controller('invoice')
@@ -20,6 +21,12 @@ export class InvoiceController {
     constructor(
         private readonly invoiceService: InvoiceService
     ) {}
+
+    @Get('parcel-and-users')
+    @Roles(Role.Admin, Role.ParcelOwner)
+    getWithParcelAndUser(): Promise<Invoice[]> {
+        return this.invoiceService.getInvoicesWithParcelsAndUsers();
+    }
 
     @ApiOperation({
         summary: 'Crear una nota de cobro asociada a una parcela',

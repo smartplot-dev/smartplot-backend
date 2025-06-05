@@ -95,6 +95,16 @@ export class InvoiceService {
         return invoice;
     }
 
+    async getInvoicesWithParcelsAndUsers(): Promise<Invoice[]> {
+        const invoices = await this.invoiceRepository.find({
+            relations: ['parcel', 'parcel.users'],
+        });
+        if (!invoices || invoices.length === 0) {
+            throw new NotFoundException('No invoices found');
+        }
+        return invoices;
+    }
+
     // FIXME!
     async findInvoicesByUser(userId: number): Promise<Invoice[]> {
         const user = await this.usersService.findUserById(userId);
