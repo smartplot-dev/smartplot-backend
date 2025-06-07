@@ -45,7 +45,7 @@ export class InvoiceController {
     create(
         @Body() createInvoiceDto: CreateInvoiceDto,
         @Param('id_parcel', ParseIntPipe) id_parcel: number
-    ): Promise<Invoice> {
+    ): Promise<number> {
         return this.invoiceService.createInvoice(createInvoiceDto, id_parcel);
     }
 

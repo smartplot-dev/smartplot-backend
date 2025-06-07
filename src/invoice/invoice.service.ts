@@ -18,7 +18,7 @@ export class InvoiceService {
         private readonly usersService: UsersService,
     ) {}
 
-    async createInvoice(createInvoiceDto: CreateInvoiceDto, id_parcel: number): Promise<Invoice> {
+    async createInvoice(createInvoiceDto: CreateInvoiceDto, id_parcel: number): Promise<number> {
         const invoice = new Invoice();
         invoice.invoice_category = createInvoiceDto.invoice_category;
         if(createInvoiceDto.invoice_category) {
@@ -52,7 +52,8 @@ export class InvoiceService {
         }
         invoice.parcel = parcel;
 
-        return await this.invoiceRepository.save(invoice);
+        await this.invoiceRepository.save(invoice);
+        return invoice.id;
     }
 
     async findAllInvoices(): Promise<Invoice[]> {

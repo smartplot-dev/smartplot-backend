@@ -23,7 +23,7 @@ export class RemunerationController {
     @ApiResponse({ status: 400, description: 'Bad Request. Asegúrate de enviar todos los campos requeridos.',})
     @ApiResponse({ status: 403, description: 'El usuario no tiene permisos para crear remuneraciones.',})
     @Post()
-    create(@Body() createRemunerationDto: CreateRemunerationDto, @Request() req): Promise<Remuneration> {
+    create(@Body() createRemunerationDto: CreateRemunerationDto, @Request() req): Promise<number> {
         const user_id = req.user.sub;
         return this.remunerationService.createRemuneration(createRemunerationDto, user_id);
     }

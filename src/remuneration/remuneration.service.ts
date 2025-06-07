@@ -16,7 +16,7 @@ export class RemunerationService {
         private readonly usersService: UsersService,
     ){}
 
-    async createRemuneration(createRemunerationDto: CreateRemunerationDto, user_id: number): Promise<Remuneration>
+    async createRemuneration(createRemunerationDto: CreateRemunerationDto, user_id: number): Promise<number>
     {
         if (!createRemunerationDto || Object.keys(createRemunerationDto).length === 0) {
             throw new BadRequestException('CreateRemunerationDto cannot be empty');
@@ -44,7 +44,9 @@ export class RemunerationService {
             registered_by: user,
         });
 
-        return await this.remunerationRepository.save(remuneration);
+        
+        await this.remunerationRepository.save(remuneration);
+        return remuneration.id
     }
 
     async getAllRemunerations(): Promise<Remuneration[]> {

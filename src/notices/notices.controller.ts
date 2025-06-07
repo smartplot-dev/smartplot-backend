@@ -34,7 +34,7 @@ export class NoticesController {
         description: 'Permite crear un nuevo aviso en el sistema. Requiere los datos del aviso (ver CreateNoticeDto). Solo los administradores pueden crear avisos.',
     })
     @Post()
-    create(@Body() createNoticeDto: CreateNoticeDto, @Request() req): Promise<Notice> {
+    create(@Body() createNoticeDto: CreateNoticeDto, @Request() req): Promise<number> {
         const userId = req.user.id; // assuming user ID is stored in the request object
         return this.noticesService.createNotice(createNoticeDto, userId);
     }

@@ -14,7 +14,7 @@ export class NoticesService {
         private readonly usersService: UsersService,
     ) {}
 
-    async createNotice(createNoticeDto: CreateNoticeDto, user_id: number): Promise<Notice> {
+    async createNotice(createNoticeDto: CreateNoticeDto, user_id: number): Promise<number> {
         if (!createNoticeDto.title || !createNoticeDto.content) {
             throw new Error('Title and content are required');
         }
@@ -29,7 +29,8 @@ export class NoticesService {
             uploadedBy: user,
             created_at: new Date(),
         });
-        return await this.noticeRepository.save(notice);
+        await this.noticeRepository.save(notice);
+        return notice.id;
     }
 
     async findAllNotices(): Promise<Notice[]> {
