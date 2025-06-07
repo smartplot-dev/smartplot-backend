@@ -5,6 +5,9 @@ import { Invoice } from 'src/entities/invoice.entity';
 import { CreateInvoiceDto } from 'src/dto/create-invoice.dto';
 import { ParcelService } from 'src/parcel/parcel.service';
 import { UsersService } from 'src/users/users.service';
+import { existsSync, mkdirSync, writeFileSync } from 'fs';
+import { join } from 'path';
+
 
 @Injectable()
 export class InvoiceService {
@@ -30,11 +33,10 @@ export class InvoiceService {
             throw new BadRequestException('Invalid amount or not provided');
         }
         invoice.amount = createInvoiceDto.amount;
-
         if( createInvoiceDto.invoice_date ) {
             invoice.invoice_date = createInvoiceDto.invoice_date;
         }
-        if (!invoice.due_date) {
+        if (!createInvoiceDto.due_date) {
             throw new BadRequestException('Invoice due date is required');
         }
         invoice.due_date = createInvoiceDto.due_date;
@@ -129,5 +131,29 @@ export class InvoiceService {
             throw new NotFoundException('No invoices found for this user');
         }
         return invoices;
+    }
+    async uploadInvoiceFile(id: number, file: Express.Multer.File) {
+        const invoice = await this.invoiceRepository.findOneBy({ id });
+        if (!invoice) {
+            throw new BadRequestException('Invoice not found');
+        }
+        if (!file) {
+            throw new BadRequestException('No file uploaded');
+        }
+
+        // Crea la carpeta si no existe
+        const uploadDir = join(__dirname, '..', '..', 'uploads', 'invoices');
+        if (!existsSync(uploadDir)) {
+            mkdirSync(uploadDir, { recursive: true });
+        }
+
+        // Guarda el archivo
+        const filePath = join(uploadDir, `${id}_${file.originalname}`);
+        writeFileSync(filePath, file.buffer);
+
+        invoice.file_path = filePath;
+        await this.invoiceRepository.save(invoice);
+
+        return { message: 'Archivo subido correctamente', filePath };
     }
 }

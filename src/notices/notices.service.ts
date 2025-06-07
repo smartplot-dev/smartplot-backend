@@ -1,10 +1,11 @@
-import { Injectable, Request } from '@nestjs/common';
+import { Injectable, Request, BadRequestException } from '@nestjs/common';
 import { Notice } from 'src/entities/notice.entity';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { CreateNoticeDto } from 'src/dto/create-notice.dto';
 import { UsersService } from 'src/users/users.service';
-
+import { join } from 'path';
+import { existsSync, mkdirSync, writeFileSync } from 'fs';
 @Injectable()
 export class NoticesService {
     constructor(
@@ -65,6 +66,28 @@ export class NoticesService {
         notice.visible = updateNoticeDto.visible ?? notice.visible;
         notice.updated_at = new Date();
         return await this.noticeRepository.save(notice);
+    }
+    async uploadNoticeFile(id: number, file: Express.Multer.File) {
+        const notice = await this.noticeRepository.findOneBy({ id });
+        if (!notice) {
+            throw new BadRequestException('Aviso no encontrado');
+        }
+        if (!file) {
+            throw new BadRequestException('No se subió ningún archivo');
+        }
+
+        const uploadDir = join(__dirname, '..', '..', 'uploads', 'notices');
+        if (!existsSync(uploadDir)) {
+            mkdirSync(uploadDir, { recursive: true });
+        }
+
+        const filePath = join(uploadDir, `${id}_${file.originalname}`);
+        writeFileSync(filePath, file.buffer);
+
+        notice.file_path = filePath;
+        await this.noticeRepository.save(notice);
+
+        return { message: 'Archivo subido correctamente', filePath };
     }
 
 }

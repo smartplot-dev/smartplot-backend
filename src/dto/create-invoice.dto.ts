@@ -1,4 +1,5 @@
 import { ApiProperty } from '@nestjs/swagger';
+import { IsDateString, IsOptional } from 'class-validator';
 
 export class CreateInvoiceDto {
 
@@ -30,14 +31,15 @@ export class CreateInvoiceDto {
         description: 'Fecha de emisión de la nota de cobro (opcional, si no se especifica, se asume la fecha actual)',
         required: false
     })
-    invoice_date?: Date;
+    invoice_date: Date;
 
-    @ApiProperty({
-        type: Date,
+     @ApiProperty({
+        type: String,
         example: '2023-09-30T00:00:00Z',
         description: 'Fecha de vencimiento de la nota de cobro'
     })
-    due_date: Date;
+    @IsDateString()
+    due_date: string;
 
     @ApiProperty({
         type: String,

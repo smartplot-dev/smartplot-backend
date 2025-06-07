@@ -4,6 +4,8 @@ import { Repository } from 'typeorm';
 import { Remuneration } from 'src/entities/remuneration.entity';
 import { UsersService } from 'src/users/users.service';
 import { CreateRemunerationDto } from 'src/dto/create-remuneration.dto';
+import { join } from 'path';
+import { existsSync, mkdirSync, writeFileSync } from 'fs';
 
 @Injectable()
 export class RemunerationService {
@@ -177,5 +179,27 @@ export class RemunerationService {
 
         return remunerations;
     }
+    async uploadRemunerationFile(id: number, file: Express.Multer.File) {
+        const remuneration = await this.remunerationRepository.findOneBy({ id });
+        if (!remuneration) {
+            throw new BadRequestException('Remuneración no encontrada');
+        }
+        if (!file) {
+            throw new BadRequestException('No se subió ningún archivo');
+        }
+
+        const uploadDir = join(__dirname, '..', '..', 'uploads', 'remunerations');
+        if (!existsSync(uploadDir)) {
+            mkdirSync(uploadDir, { recursive: true });
+        }
+
+        const filePath = join(uploadDir, `${id}_${file.originalname}`);
+        writeFileSync(filePath, file.buffer);
+
+        remuneration.file_path = filePath;
+        await this.remunerationRepository.save(remuneration);
+
+        return { message: 'Archivo subido correctamente', filePath };
+}
 
 }

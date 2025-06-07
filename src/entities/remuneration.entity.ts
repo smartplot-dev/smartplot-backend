@@ -33,6 +33,11 @@ export class Remuneration {
     @Column({ type: 'int', nullable: false })
     year: number;
 
+ 
+    @Column({ type: 'varchar', length: 255, nullable: true })
+    file_path: string;
+
+
     @ManyToOne(() => User, user => user.remunerations)
     @JoinColumn({ name: 'registered_by' })
     registered_by: User;

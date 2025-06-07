@@ -1,10 +1,12 @@
-import { Body, Controller, Delete, Get, Param, Post, Put, Request, UnauthorizedException, NotFoundException } from '@nestjs/common';
+import { Body, Controller, Delete, Get,Res, Param, Post,Put, UploadedFile,UseInterceptors,Request, ParseIntPipe,UnauthorizedException, NotFoundException } from '@nestjs/common';
 import { RemunerationService } from './remuneration.service';
 import { CreateRemunerationDto } from 'src/dto/create-remuneration.dto';
 import { Remuneration } from 'src/entities/remuneration.entity';
 import { ApiOperation, ApiResponse } from '@nestjs/swagger';
 import { Roles } from 'src/decorators/roles.decorator';
 import { Role } from 'src/enums/role.enum';
+import { FileInterceptor } from '@nestjs/platform-express';
+import { Response } from 'express';
 
 @Controller('remuneration')
 @Roles(Role.Admin)
@@ -99,5 +101,35 @@ export class RemunerationController {
     @Delete(':id')
     delete(@Param('id') id: number): Promise<void> {
         return this.remunerationService.deleteRemuneration(id);
+    }
+
+    @Post(':id/upload-file')
+    @UseInterceptors(FileInterceptor('file', {
+        limits: { fileSize: 25 * 1024 * 1024 },
+        fileFilter: (req, file, cb) => {
+            const allowedTypes = ['application/pdf', 'image/jpeg', 'image/png'];
+            if (!allowedTypes.includes(file.mimetype)) {
+                return cb(new Error('Tipo de archivo no permitido'), false);
+            }
+            cb(null, true);
+        },
+    }))
+    async uploadRemunerationFile(
+        @Param('id', ParseIntPipe) id: number,
+        @UploadedFile() file: Express.Multer.File
+    ) {
+        return this.remunerationService.uploadRemunerationFile(id, file);
+    }
+
+    @Get(':id/download-file')
+    async downloadRemunerationFile(
+        @Param('id', ParseIntPipe) id: number,
+        @Res() res: Response
+    ) {
+        const remuneration = await this.remunerationService.getRemunerationById(id);
+        if (!remuneration || !remuneration.file_path) {
+            throw new NotFoundException('Archivo no encontrado');
+        }
+        return res.download(remuneration.file_path);
     }
 }

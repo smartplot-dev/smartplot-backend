@@ -8,6 +8,10 @@ import {
     ParseIntPipe,
     Request,
     Put,
+    UploadedFile,
+    UseInterceptors,
+    Res,
+    NotFoundException,
 } from '@nestjs/common';
 import { NoticesService } from './notices.service';
 import { CreateNoticeDto } from 'src/dto/create-notice.dto';
@@ -15,6 +19,8 @@ import { Notice } from 'src/entities/notice.entity';
 import { ApiOperation } from '@nestjs/swagger';
 import { Roles } from 'src/decorators/roles.decorator';
 import { Role } from 'src/enums/role.enum';
+import { FileInterceptor } from '@nestjs/platform-express';
+import { Response } from 'express';
 
 @Controller('notices')
 @Roles(Role.Admin)
@@ -82,5 +88,33 @@ export class NoticesController {
         @Body() updateNoticeDto: CreateNoticeDto,
     ): Promise<Notice | null> {
         return this.noticesService.updateNotice(id, updateNoticeDto);
+    }
+
+    @Post(':id/upload-file')
+    @UseInterceptors(FileInterceptor('file', {
+        limits: { fileSize: 25 * 1024 * 1024 },
+        fileFilter: (req, file, cb) => {
+            if (file.mimetype !== 'application/pdf') {
+                return cb(new Error('Solo se permiten archivos PDF'), false);
+            }
+            cb(null, true);
+        },
+    }))
+    async uploadNoticeFile(
+        @Param('id', ParseIntPipe) id: number,
+        @UploadedFile() file: Express.Multer.File
+    ) {
+        return this.noticesService.uploadNoticeFile(id, file);
+    }
+    @Get(':id/download-file')
+    async downloadNoticeFile(
+        @Param('id', ParseIntPipe) id: number,
+        @Res() res: Response
+    ) {
+        const notice = await this.noticesService.findNoticeById(id);
+        if (!notice || !notice.file_path) {
+            throw new NotFoundException('Archivo no encontrado');
+        }
+        return res.download(notice.file_path);
     }
 }

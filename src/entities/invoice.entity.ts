@@ -16,14 +16,17 @@ export class Invoice {
     @Column({ type: 'int' })
     amount: number;
 
-    @Column({ type: 'timestamp', default: () => 'CURRENT_TIMESTAMP' })
+    @Column({type: 'date', nullable: true , default: () => 'CURRENT_DATE'})
     invoice_date: Date;
 
-    @Column({ type: 'timestamp',default: () => 'CURRENT_TIMESTAMP' })
-    due_date: Date;
+    @Column({ type: 'varchar', length: 50 })
+    due_date: string;
 
     @Column({ type: 'varchar', length: 50 })
     status: string;
+    
+    @Column({ type: 'varchar', length: 255, nullable: true })
+    file_path: string;
 
     @ManyToOne(() => Parcel, parcel => parcel.invoices, { onDelete: 'CASCADE' })
     @JoinColumn({ name: 'id_parcel' })

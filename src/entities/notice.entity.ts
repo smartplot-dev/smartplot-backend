@@ -20,6 +20,9 @@ export class Notice {
 
     @Column({ type: 'boolean', default: false })
     visible: boolean;
+    
+    @Column({ type: 'varchar', length: 255, nullable: true })
+    file_path: string;
 
     @ManyToOne(() => User, user => user.notices)
     @JoinColumn({ name: 'uploaded_by' })

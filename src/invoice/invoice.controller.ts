@@ -6,6 +6,10 @@ import { Body,
     Post,
     ParseIntPipe,
     Put,
+    UploadedFile,
+    UseInterceptors,
+    Res,
+    NotFoundException
  } from '@nestjs/common';
 import { InvoiceService } from './invoice.service';
 import { CreateInvoiceDto } from 'src/dto/create-invoice.dto';
@@ -14,6 +18,8 @@ import { ApiOperation, ApiParam, ApiResponse } from '@nestjs/swagger';
 import { Roles } from 'src/decorators/roles.decorator';
 import { Role } from 'src/enums/role.enum';
 import { get } from 'http';
+import { FileInterceptor } from '@nestjs/platform-express';
+import { Response } from 'express';
 
 @Roles(Role.Admin)
 @Controller('invoice')
@@ -119,4 +125,43 @@ export class InvoiceController {
     ): Promise<Invoice> {
         return this.invoiceService.updateInvoice(id, updateData);
     }
+    @ApiOperation({
+        summary: 'Subir archivo de comprobante para una nota de cobro',
+        description: 'Permite subir un archivo (ej: PDF) asociado a una nota de cobro. Solo administradores.',
+    })
+    @Post(':id/upload-file')
+    @UseInterceptors(FileInterceptor('file', {
+        limits: { fileSize: 25 * 1024 * 1024 }, // Limite de 25MB
+        fileFilter: (req, file, cb) => {
+            const allowedTypes = ['application/pdf', 'image/jpeg', 'image/png'];
+            if (!allowedTypes.includes(file.mimetype)) {
+                return cb(new Error('Tipo de archivo no permitido'), false);
+            }
+            cb(null, true);
+        },
+    }))
+    async uploadInvoiceFile(
+        @Param('id', ParseIntPipe) id: number,
+        @UploadedFile() file: Express.Multer.File
+    ) {
+        // Llama al servicio para guardar el archivo o asociarlo a la factura
+        return this.invoiceService.uploadInvoiceFile(id, file);
+    }
+     @ApiOperation({
+    summary: 'Descargar archivo de factura',
+    description: 'Permite descargar el archivo asociado a una factura por su ID.',
+  })
+  @Get(':id/download-file')
+  async downloadInvoiceFile(
+    @Param('id', ParseIntPipe) id: number,
+    @Res() res: Response
+  ) {
+    const invoice = await this.invoiceService.findInvoiceById(id);
+    console.log(invoice);
+    if (!invoice || !invoice.file_path) {
+      throw new NotFoundException('Archivo no encontrado');
+    }
+    // Envía el archivo como descarga
+    return res.download(invoice.file_path);
+  }
 }

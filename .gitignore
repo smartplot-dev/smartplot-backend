@@ -43,6 +43,9 @@ development.env
 .env.production.local
 .env.local
 
+# PDF directory
+/uploads
+
 # temp directory
 .temp
 .tmp
