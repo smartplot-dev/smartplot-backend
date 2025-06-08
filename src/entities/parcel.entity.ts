@@ -11,9 +11,9 @@ export class Parcel {
     @Column({ type: 'varchar', length: 255 })
     numero_parcela: string;
 
-    @OneToMany(() => Invoice, invoice => invoice.parcel, { eager: true })
+    @OneToMany(() => Invoice, invoice => invoice.parcel)
     invoices: Invoice[];
-    @OneToMany(() => Meter, meter => meter.parcel, { eager: true })
+    @OneToMany(() => Meter, meter => meter.parcel)
     meters: Meter[];
 
     @ManyToMany(() => User, user => user.parcels)   

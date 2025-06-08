@@ -105,24 +105,9 @@ export class PaymentsController {
         const invoice = await this.invoiceService.findInvoiceById(invoiceId);
         
         if (!invoice) {
-            throw new NotFoundException('Invoice not found');
+            throw new NotFoundException(`Invoice with ID ${invoiceId} not found.`);
         }
 
-        const parcel = await this.parcelService.findParcelById(invoice.parcel.id_parcel);
-
-        if (!parcel) {
-            throw new NotFoundException('Parcel not found');
-        }
-
-        const parcelOwners = (await this.parcelService.findParcelOwners(parcel.id_parcel)).map(owner => owner.id);
-        console.log(`Parcel Owners: ${JSON.stringify(parcelOwners)}`);
-
-        if (parcelOwners && parcelOwners.length > 0) {
-            if (!canViewPayment({ id: req.user.sub, role: req.user.role }, parcelOwners)) {
-                throw new UnauthorizedException('Access denied: You do not have permission to view these payments.');
-            }
-        }
-
-        return this.paymentsService.findPaymentsByInvoice(invoiceId);
+        return this.paymentsService.findPaymentsByInvoice(invoiceId)
     }
 }
