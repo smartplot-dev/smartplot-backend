@@ -7,7 +7,8 @@ import { ParcelModule } from 'src/parcel/parcel.module';
 import { MeterReadingModule } from 'src/meterReading/meter-reading/meter-reading.module';
 
 @Module({
-  imports: [TypeOrmModule.forFeature([Meter]), ParcelModule, 
+  imports: [TypeOrmModule.forFeature([Meter]), 
+  forwardRef(()=>ParcelModule), 
   forwardRef(()=> MeterReadingModule)],
   controllers: [MeterController],
   providers: [MeterService],

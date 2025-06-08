@@ -59,4 +59,9 @@ export class MeterController {
     await this.meterService.deleteMeterAndReadings(Number(id));
     return { message: 'Meter and its readings deleted successfully' };
   }
+
+  @Delete("delete-meter-parcel/:id")
+  async deleteMeterAndReadingByParcelId(@Param('id_parcel') id: number) {
+    return this.meterService.deleteMeterAndReadingByParcelId(id);
+  }
 }

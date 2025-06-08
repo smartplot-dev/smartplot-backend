@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable , Inject, forwardRef} from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { Meter } from '../../entities/meter.entity';
@@ -14,6 +14,7 @@ export class MeterService {
     constructor(
     @InjectRepository(Meter)
     private meterRepo: Repository<Meter>,
+    @Inject(forwardRef(() => ParcelService))
     private readonly parcelService: ParcelService,
     private readonly meterReadingService: MeterReadingService,
   ) {}
@@ -57,4 +58,21 @@ export class MeterService {
     await this.meterReadingService.deleteReadingsByMeterId(id);
     await this.meterRepo.remove(meter);
   }
+  async deleteMeterAndReadingByParcelId(id: number): Promise<void> {
+    const parcel = await this.parcelService.findParcelById(id);
+  if (!parcel) {
+    throw new Error('Parcel not found');
+  }
+    const meters = await this.meterRepo.find({
+    where: { parcel: parcel },
+    relations: ['parcel'],
+  });
+  if (!meters.length) {
+    throw new Error('No meters found for the given parcel');
+  }
+  for (const meter of meters) {
+    await this.meterReadingService.deleteReadingsByMeterId(meter.id);
+    await this.meterRepo.remove(meter);
+  }
+}
 }
