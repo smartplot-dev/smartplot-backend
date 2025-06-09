@@ -41,8 +41,8 @@ export class PaymentsController {
         summary: 'Confirmar una transacción de pago con Webpay (uso interno)',
         description: 'Permite confirmar una transacción de pago utilizando Webpay. Requiere el token de la transacción. Importante: este endpoint debe ser llamado únicamente por Transbank, no desde el frontend. Este endpoint es público.',
     })
-    @Public()
     @Get('webpay/commit-trx')
+    @Public()
     async commitTransaction(@Query('token_ws') token: string, @Res() res: Response) {
         const returnUrl = process.env.WEBPAY_PAYMENT_RESULT_URL;
         if (!returnUrl) {
