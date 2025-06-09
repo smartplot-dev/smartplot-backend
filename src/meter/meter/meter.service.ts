@@ -41,6 +41,16 @@ export class MeterService {
       relations: ['parcel', 'readings'],
     });
   }
+  async findByParcelId(parcelId: number): Promise<Meter[]> {
+    const parcel = await this.parcelService.findParcelById(parcelId);
+    if (!parcel) {
+      throw new Error('Parcel not found');
+    }
+    return this.meterRepo.find({
+      where: { parcel: parcel },
+      relations: ['parcel', 'readings'],
+    });
+  }
 
   async update(id: number, updateMeterDto: CreateMeterDto): Promise<Meter> {
     const meter = await this.findOne(id);

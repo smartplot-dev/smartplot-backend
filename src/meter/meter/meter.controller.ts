@@ -64,4 +64,7 @@ export class MeterController {
   async deleteMeterAndReadingByParcelId(@Param('id_parcel') id: number) {
     return this.meterService.deleteMeterAndReadingByParcelId(id);
   }
+  @Get("get-byparcel/:id")
+  async getMeterByParcelId(@Param('id') id: number) {
+    return this.meterService.findByParcelId(id);}
 }
