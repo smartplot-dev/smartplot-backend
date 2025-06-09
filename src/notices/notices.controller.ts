@@ -91,6 +91,11 @@ export class NoticesController {
     }
 
     @Post(':id/upload-file')
+    @ApiOperation({
+        summary: 'Subir archivo de aviso por ID',
+        description: 'Permite subir un archivo (ej: PDF) asociado a un aviso específico por su ID. Solo los administradores pueden realizar esta acción. El archivo debe ser un PDF y no puede exceder los 25 MB.',
+    })
+    @Roles(Role.Admin)
     @UseInterceptors(FileInterceptor('file', {
         limits: { fileSize: 25 * 1024 * 1024 },
         fileFilter: (req, file, cb) => {
@@ -107,6 +112,11 @@ export class NoticesController {
         return this.noticesService.uploadNoticeFile(id, file);
     }
     @Get(':id/download-file')
+    @Roles(Role.Admin, Role.ParcelOwner)
+    @ApiOperation({
+        summary: 'Descargar archivo de aviso por ID',
+        description: 'Permite descargar el archivo asociado a un aviso específico por su ID. Si el aviso no tiene archivo, retorna un error 404. Administradores y propietarios de parcelas pueden acceder a este endpoint.',
+    })
     async downloadNoticeFile(
         @Param('id', ParseIntPipe) id: number,
         @Res() res: Response

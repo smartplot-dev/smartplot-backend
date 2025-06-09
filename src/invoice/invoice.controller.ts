@@ -147,10 +147,11 @@ export class InvoiceController {
         return this.invoiceService.uploadInvoiceFile(id, file);
     }
      @ApiOperation({
-    summary: 'Descargar archivo de factura',
-    description: 'Permite descargar el archivo asociado a una factura por su ID.',
+    summary: 'Descargar archivo de nota de cobro por ID',
+    description: 'Permite descargar el archivo asociado a una nota de cobro por su ID. Administradores y propietarios de parcelas pueden descargar archivos de invoices.',
   })
   @Get(':id/download-file')
+  @Roles(Role.Admin, Role.ParcelOwner)
   async downloadInvoiceFile(
     @Param('id', ParseIntPipe) id: number,
     @Res() res: Response
