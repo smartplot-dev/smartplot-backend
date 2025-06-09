@@ -17,6 +17,7 @@ import { PaymentsModule } from './payments/payments.module';
 import { MeterReadingModule } from './meterReading/meter-reading/meter-reading.module';
 import { AdminExpensesModule } from './admin-expenses/admin-expenses.module';
 import { RemunerationModule } from './remuneration/remuneration.module';
+import { Reflector } from '@nestjs/core';
 
 @Module({
   imports: [
@@ -51,7 +52,8 @@ import { RemunerationModule } from './remuneration/remuneration.module';
     AppService,
     {
       provide: APP_GUARD,
-      useClass: RolesGuard, // use the RolesGuard globally, use public decorator to override it
+      useFactory: (reflector: Reflector) => new RolesGuard(reflector), // use the RolesGuard globally, use public decorator to override it
+      inject: [Reflector],
     },
     JwtStrategy,
   ],

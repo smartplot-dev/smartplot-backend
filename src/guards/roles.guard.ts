@@ -4,6 +4,7 @@ import { AuthGuard } from '@nestjs/passport';
 import { ROLES_KEY } from '../decorators/roles.decorator';
 import { Public } from 'src/decorators/public.decorator';
 import { Role } from '../enums/role.enum';
+import { IS_PUBLIC_KEY } from 'src/decorators/public.decorator';
 
 @Injectable()
 export class RolesGuard extends AuthGuard('jwt') implements CanActivate {
@@ -12,7 +13,7 @@ export class RolesGuard extends AuthGuard('jwt') implements CanActivate {
     }
 
     async canActivate(context: ExecutionContext): Promise<boolean> {
-        const isPublic = this.reflector.getAllAndOverride('isPublic', [context.getHandler(), context.getClass()]);
+        const isPublic = this.reflector.getAllAndOverride<boolean>(IS_PUBLIC_KEY, [context.getHandler(), context.getClass()]);
         if (isPublic) {
             return true; // If the route is public, allow access (use @Public() decorator)
         }
