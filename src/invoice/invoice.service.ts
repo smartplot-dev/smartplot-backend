@@ -57,7 +57,7 @@ export class InvoiceService {
     }
 
     async findAllInvoices(): Promise<Invoice[]> {
-        return await this.invoiceRepository.find();
+        return await this.invoiceRepository.find({relations: ['parcel']});
     }
 
     async findInvoiceById(id: number): Promise<Invoice | null> {
