@@ -1,4 +1,4 @@
-import { Body, Controller, Get, Post, Param, ParseIntPipe, Query, Request, UnauthorizedException, NotFoundException } from '@nestjs/common';
+import { Body, Controller, Res, Get, Post, Param, ParseIntPipe, Query, Request, UnauthorizedException, NotFoundException, UseGuards } from '@nestjs/common';
 import { CreatePaymentDto } from 'src/dto/create-payment.dto';
 import { PaymentsService } from './payments.service';
 import { Payment } from 'src/entities/payment.entity';
@@ -13,8 +13,11 @@ import { ParcelService } from 'src/parcel/parcel.service';
 import { Invoice } from 'src/entities/invoice.entity';
 import { UsersService } from 'src/users/users.service';
 import { User } from 'src/entities/user.entity';
+import { Response } from 'express';
+import { RolesGuard } from 'src/guards/roles.guard';
 
 @Controller('payments')
+@UseGuards(RolesGuard)
 @Roles(Role.Admin, Role.ParcelOwner)
 export class PaymentsController {
     constructor(private readonly paymentsService: PaymentsService,
@@ -40,8 +43,14 @@ export class PaymentsController {
     })
     @Public()
     @Get('webpay/commit-trx')
-    async commitTransaction(@Query('token_ws') token: string): Promise<Payment> {
-        return this.paymentsService.commitWebpayPayment(token);
+    async commitTransaction(@Query('token_ws') token: string, @Res() res: Response) {
+        const returnUrl = process.env.WEBPAY_PAYMENT_RESULT_URL;
+        if (!returnUrl) {
+            throw new NotFoundException('Return URL for Webpay is not configured. Please set the WEBPAY_PAYMENT_RESULT_URL environment variable.');
+        }
+        const payment = await this.paymentsService.commitWebpayPayment(token);
+
+        return res.redirect(`${returnUrl}?paymentId=${payment.id}&status=${payment.status}`);
     }
 
     @ApiOperation({
@@ -92,7 +101,7 @@ export class PaymentsController {
         return this.paymentsService.findPaymentsByUser(userId);
     }
 
-    // TODO: probar esto
+    // TODO: permisos
     @ApiOperation({
         summary: 'Obtener pagos asociados a una nota de cobro',
         description: 'Retorna un array de pagos asociados a una nota de cobro específica. Este endpoint es accesible para administradores y propietarios de parcelas. Un administrador puede ver los pagos de cualquier nota de cobro, mientras que un propietario solo puede ver los pagos de las notas de cobro asociadas a sus parcelas.',

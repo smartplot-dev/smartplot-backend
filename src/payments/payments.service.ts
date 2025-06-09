@@ -141,14 +141,18 @@ export class PaymentsService {
 
         if (!commitResponse) {
             payment.status = PaymentStatus.Failed;
-            await this.paymentRepository.save(payment);
-            throw new BadRequestException('Failed to commit Webpay transaction');
+            payment.notes = 'Webpay transaction failed with no response from Transbank';
+            return this.paymentRepository.save(payment);
         }
 
-        if (commitResponse.response_code !== 0) {
+        if (Number(commitResponse.response_code) !== 0) {
             payment.status = PaymentStatus.Failed;
+            payment.card_last_four = commitResponse.card_detail?.card_number || 'N/A';
+            payment.transaction_date = commitResponse.transaction_date || new Date();
+            payment.transaction_status = commitResponse.status || 'FAILED';
+            payment.authorization_code = commitResponse.authorization_code || 'N/A';
             payment.notes = `Webpay transaction failed with response code: ${commitResponse.response_code}`;
-            throw new BadRequestException(`Webpay transaction failed with response code: ${commitResponse.response_code}`);
+            return await this.paymentRepository.save(payment);
         } 
 
         payment.status = PaymentStatus.Completed;

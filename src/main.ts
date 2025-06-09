@@ -15,6 +15,10 @@ async function bootstrap() {
   SwaggerModule.setup('api/docs', app, documentFactory());
   app.enableCors();
 
+  if( process.env.API_PREFIX ) {
+    app.setGlobalPrefix(process.env.API_PREFIX);
+  }
+
   await app.listen(process.env.PORT ?? 3000);
 }
 bootstrap();
