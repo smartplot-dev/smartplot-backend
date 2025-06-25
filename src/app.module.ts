@@ -18,6 +18,8 @@ import { MeterReadingModule } from './meterReading/meter-reading/meter-reading.m
 import { AdminExpensesModule } from './admin-expenses/admin-expenses.module';
 import { RemunerationModule } from './remuneration/remuneration.module';
 import { Reflector } from '@nestjs/core';
+import { MailModule } from './mail/mail.module';
+import { TasksModule } from './tasks/tasks.module';
 
 @Module({
   imports: [
@@ -46,6 +48,8 @@ import { Reflector } from '@nestjs/core';
     MeterReadingModule,
     AdminExpensesModule,
     RemunerationModule,
+    MailModule,
+    TasksModule,
   ],
   controllers: [AppController],
   providers: [

@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <title>Pago exitoso - SmartPlot</title>
+  <style>
+    body {
+      background-color: #f9f9f9;
+      font-family: 'Segoe UI', sans-serif;
+      color: #333;
+      margin: 0;
+      padding: 0;
+    }
+    .container {
+      max-width: 600px;
+      margin: 30px auto;
+      background-color: #ffffff;
+      border: 1px solid #e0e0e0;
+      border-radius: 8px;
+      overflow: hidden;
+    }
+    .header {
+      background-color: #465E20;
+      color: white;
+      padding: 20px;
+      text-align: center;
+    }
+    .header img {
+      max-height: 50px;
+      display: block;
+      margin: 0 auto 10px auto;
+    }
+    .header h1 {
+      margin: 0;
+      font-size: 24px;
+    }
+    .content {
+      padding: 30px;
+      background-color: #f9f9f9;
+    }
+    .content h2 {
+      color: #465E20;
+      font-size: 20px;
+    }
+    .content p {
+      font-size: 16px;
+      line-height: 1.5;
+      margin-bottom: 20px;
+    }
+    .success-box {
+      background-color: #758012;
+      color: white;
+      padding: 15px;
+      border-radius: 6px;
+    }
+    .success-box p {
+      margin: 5px 0;
+    }
+    .footer {
+      text-align: center;
+      padding: 20px;
+      font-size: 13px;
+      color: #777;
+      background-color: #f0f0f0;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="header">
+      <div style="background-color: #fff; border-radius: 6px; display: inline-block;">
+        <img src="https://smartplot.up.railway.app/assets/images/logo.png" alt="Logo SmartPlot" style="max-height: 100px;">
+      </div>
+      <h1>Hacienda Limache</h1>
+    </div>
+    <div class="content">
+      <h2>Hola, {{nombre_usuario}} 🎉</h2>
+      <p>Tu pago ha sido procesado con éxito. A continuación, te dejamos los detalles:</p>
+
+      <div class="success-box">
+        <p><strong>Motivo cobro:</strong> {{motivo}}</p>
+        <p><strong>Monto pagado:</strong> ${{monto}}</p>
+        <p><strong>Parcela:</strong> {{parcela_asignada}}</p>
+        <p><strong>Fecha de pago:</strong> {{fecha_pago}}</p>
+        <p><strong>Referencia de pago:</strong> {{referencia_pago}}</p>
+        <p><strong>Estado del pago:</strong> {{estado_pago}}</p>
+        <p><strong>Método de pago:</strong> {{metodo_pago}}</p>
+      </div>
+
+      <p>Gracias por tu pago. Si necesitas el comprobante o tienes alguna duda, contáctanos directamente.</p>
+    </div>
+    <div class="footer">
+      © {{current_year}} SmartPlot. Todos los derechos reservados.
+    </div>
+  </div>
+</body>
+</html>

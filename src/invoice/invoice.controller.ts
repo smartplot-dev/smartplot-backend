@@ -27,6 +27,22 @@ export class InvoiceController {
         private readonly invoiceService: InvoiceService
     ) {}
 
+    @ApiOperation({
+        summary: 'Enviar notificaciones de pagos pendientes',
+        description: 'Envía notificaciones a los usuarios sobre pagos pendientes. Solo administradores pueden acceder a este endpoint.',
+    })
+    @Get('send-pending-notifications')
+    @Roles(Role.Admin)
+    async sendPendingPaymentNotifications() {
+        console.log('Notifying users about pending payments...');
+        await this.invoiceService.sendPendingPaymentNotifications();
+        return { message: 'Pending payment notifications sent.' };
+    }
+
+    @ApiOperation({
+        summary: 'Obtener todas las notas de cobro con parcelas y usuarios',
+        description: 'Retorna un array de todas las notas de cobro con sus respectivas parcelas y usuarios asociados. Administradores y propietarios pueden acceder a este endpoint.',
+    })
     @Get('parcel-and-users')
     @Roles(Role.Admin, Role.ParcelOwner)
     getWithParcelAndUser(): Promise<Invoice[]> {
@@ -164,4 +180,5 @@ export class InvoiceController {
     // Envía el archivo como descarga
     return res.download(invoice.file_path);
   }
+
 }

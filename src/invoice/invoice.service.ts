@@ -5,17 +5,21 @@ import { Invoice } from 'src/entities/invoice.entity';
 import { CreateInvoiceDto } from 'src/dto/create-invoice.dto';
 import { ParcelService } from 'src/parcel/parcel.service';
 import { UsersService } from 'src/users/users.service';
+import { MailService } from 'src/mail/mail.service';
 import { existsSync, mkdirSync, writeFileSync } from 'fs';
 import { join } from 'path';
+import { Logger } from '@nestjs/common';
 
 
 @Injectable()
 export class InvoiceService {
+    private readonly logger = new Logger(MailService.name);
     constructor(
         @InjectRepository(Invoice)
         private readonly invoiceRepository: Repository<Invoice>,
         private readonly parcelService: ParcelService,
         private readonly usersService: UsersService,
+        private readonly mailService: MailService,
     ) {}
 
     async createInvoice(createInvoiceDto: CreateInvoiceDto, id_parcel: number): Promise<number> {
@@ -53,6 +57,25 @@ export class InvoiceService {
         invoice.parcel = parcel;
 
         await this.invoiceRepository.save(invoice);
+        // Send email notification
+        //const user = await this.usersService.findUserById(parcel.users[0].id);
+        const parcelOwners = await this.parcelService.findParcelOwners(parcel.id_parcel);
+
+        if (!parcelOwners || parcelOwners.length === 0) {
+            throw new NotFoundException('No owners found for this parcel, cannot send invoice email');
+        }
+
+        // send email to all owners of the parcel
+        parcelOwners.forEach(owner => {
+            this.mailService.sendInvoiceEmail(
+                [owner.email],
+                owner.name,
+                invoice.invoice_category,
+                invoice.amount,
+                parcel.numero_parcela,
+                invoice.due_date)
+        });
+
         return invoice.id;
     }
 
@@ -156,5 +179,47 @@ export class InvoiceService {
         await this.invoiceRepository.save(invoice);
 
         return { message: 'Archivo subido correctamente', filePath };
+    }
+
+    async getInvoicesByStatus(status: string): Promise<Invoice[]> {
+        if (!status) {
+            throw new BadRequestException('Status is required');
+        }
+        const invoices = await this.invoiceRepository.find({
+            where: { status },
+            relations: ['parcel', 'parcel.users'],
+        });
+        if (!invoices || invoices.length === 0) {
+            throw new NotFoundException(`No invoices found with status ${status}`);
+        }
+        return invoices;
+    }
+
+    async sendPendingPaymentNotifications() {
+        const pendingInvoices = await this.getInvoicesByStatus('pending');
+        if (pendingInvoices.length === 0) {
+            this.logger.log('No pending invoices found, no notifications sent.');
+            return;
+        }
+        this.logger.log(`Found ${pendingInvoices.length} pending invoices, sending notifications...`);
+        for (const invoice of pendingInvoices) {
+            const parcelOwners = invoice.parcel.users;
+            if (!parcelOwners || parcelOwners.length === 0) {
+                this.logger.warn(`No owners found for parcel ${invoice.parcel.numero_parcela}, cannot send notification.`);
+                continue;
+            }
+            
+            parcelOwners.forEach(owner => {
+                this.mailService.sendPendingPaymentNotification(
+                    [owner.email],
+                    owner.name,
+                    invoice.invoice_category,
+                    invoice.amount,
+                    invoice.parcel.numero_parcela,
+                    invoice.due_date
+                );
+                this.logger.log(`Pending payment notification sent to ${owner.email} for invoice ${invoice.id}`);
+            })
+        }
     }
 }

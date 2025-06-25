@@ -12,6 +12,7 @@ import { Options, IntegrationApiKeys, Environment, IntegrationCommerceCodes } fr
 import { PaymentStatus } from 'src/enums/payment-status.enum';
 import { PaymentMethod } from 'src/enums/payment-methods.enum';
 import { InvoiceStatus } from 'src/enums/invoice-status.enum';
+import { MailService } from 'src/mail/mail.service';
 
 @Injectable()
 export class PaymentsService {
@@ -20,6 +21,7 @@ export class PaymentsService {
         private readonly paymentRepository: Repository<Payment>,
         private readonly invoiceService: InvoiceService,
         private readonly usersService: UsersService,
+        private readonly mailService: MailService,
     ) {}
 
     // callback URL for commiting webpay transactions
@@ -122,7 +124,7 @@ export class PaymentsService {
 
         const payment = await this.paymentRepository.findOne({
             where: { reference_number: token },
-            relations: ['invoices'],
+            relations: ['invoices', 'invoices.parcel', 'user'],
         });
 
         if (!payment) {
@@ -142,6 +144,15 @@ export class PaymentsService {
         if (!commitResponse) {
             payment.status = PaymentStatus.Failed;
             payment.notes = 'Webpay transaction failed with no response from Transbank';
+            // send email to user about the failure
+            await this.mailService.sendPaymentFailureEmail(
+                [payment.user.email],
+                payment.user.name,
+                payment.amount,
+                payment.invoices.map(inv => inv.parcel.numero_parcela).join(', '),
+                payment.payment_date? payment.payment_date : new Date(),
+                'No response from Webpay',
+            );
             return this.paymentRepository.save(payment);
         }
 
@@ -152,6 +163,15 @@ export class PaymentsService {
             payment.transaction_status = commitResponse.status || 'FAILED';
             payment.authorization_code = commitResponse.authorization_code || 'N/A';
             payment.notes = `Webpay transaction failed with response code: ${commitResponse.response_code}`;
+            // send email to user about the failure
+            await this.mailService.sendPaymentFailureEmail(
+                [payment.user.email],
+                payment.user.name,
+                payment.amount,
+                payment.invoices.map(inv => inv.parcel.numero_parcela).join(', '),
+                payment.payment_date? payment.payment_date : new Date(),
+                `Transaction failed with response code: ${commitResponse.response_code}`,
+            );
             return await this.paymentRepository.save(payment);
         } 
 
@@ -165,6 +185,20 @@ export class PaymentsService {
         payment.authorization_code = commitResponse.authorization_code;
         payment.card_last_four = commitResponse.card_detail.card_number;
         payment.amount = commitResponse.amount;
+        payment.notes = `Webpay transaction completed successfully with response code: ${commitResponse.response_code}`;
+
+        await this.mailService.sendPaymentSuccessEmail(
+            [payment.user.email],
+            payment.user.name,
+            payment.invoices.map(inv => inv.invoice_category).join(', '),
+            payment.amount,
+            payment.invoices.map(inv => inv.parcel.numero_parcela).join(', '),
+            payment.payment_date? payment.payment_date : new Date(),
+            payment.internal_reference_number? payment.internal_reference_number : 'N/A',
+            payment.status,
+            payment.payment_method,
+        );
+
         return await this.paymentRepository.save(payment);
     }
 
@@ -202,6 +236,7 @@ export class PaymentsService {
         });
     }
 
+    // TODO: send email to user about the payment creation
     async createManualPayment(
         createPaymentDto: CreatePaymentDto,
         userId: number,

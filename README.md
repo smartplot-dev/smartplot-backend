@@ -30,6 +30,15 @@
     
     # Despues de confirmar una transacción, se redirige al usuario a esta URL con ?paymentId=<id>&status=<status>
     WEBPAY_PAYMENT_RESULT_URL=<URL de callback para mostrar resultado del pago en el frontend>
+
+    # Configuración del servicio SMTP para enviar notificaciones por correo
+    SMTP_HOST=<smtp.example.com>
+    SMTP_PORT=<587>
+    SMTP_SECURE=<true|false>
+    SMTP_TLS_REJECT_UNAUTHORIZED=<true|false>
+    SMTP_FROM=<example>
+    SMTP_USER=<smtp_user>
+    SMTP_PASSWORD=<smtp_password>
     ```
 4. Ahora se puede iniciar la API utilizando el comando `npm run start:dev`
 
