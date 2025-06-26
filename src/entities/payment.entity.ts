@@ -43,7 +43,7 @@ export class Payment {
     @OneToMany(() => Invoice, invoice => invoice.payment, { eager: true })
     invoices: Invoice[];
 
-    @ManyToOne(() => User, user => user.payments)
+    @ManyToOne(() => User, user => user.payments, { onDelete: 'SET NULL', nullable: true })
     @JoinColumn({ name: 'user_id' })
     user: User;
 }
